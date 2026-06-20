@@ -140,7 +140,41 @@ function Index() {
         </div>
       </section>
 
-      {/* Booking Form */}
+      {/* Facilities / Attractions */}
+      <section id="facilities" className="bg-sand-100 px-6 py-20 scroll-mt-20">
+        <div className="mb-10 max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-display italic mb-2">Lodge Attractions</h2>
+          <p className="text-earth-900/60 text-sm">Spaces designed to bring the Serengeti even closer.</p>
+        </div>
+
+        <div className="max-w-5xl mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {FACILITIES.map((f) => (
+            <article key={f.name} className="bg-white rounded-2xl overflow-hidden border border-earth-900/5 flex flex-col group">
+              <img
+                src={f.img}
+                alt={f.alt}
+                loading="lazy"
+                width={1024}
+                height={1280}
+                className="w-full aspect-[4/5] object-cover bg-sand-100 transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="p-5 flex flex-col flex-1">
+                <h3 className="font-bold text-sm mb-1">{f.name}</h3>
+                <p className="text-xs text-earth-900/60 mb-4 flex-1">{f.desc}</p>
+                <a
+                  href={wa(`Hello, I am interested in the ${f.name}. Please share more details.`)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-center text-[10px] font-bold uppercase tracking-widest py-3 border border-earth-900/10 rounded-xl hover:bg-earth-900 hover:text-white transition-colors"
+                >
+                  Enquire
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section id="book" className="px-6 py-20 bg-earth-900 text-white scroll-mt-20">
         <div className="max-w-xl mx-auto">
           <span className="inline-block mb-3 px-2 py-1 bg-savannah text-white text-[10px] font-bold tracking-widest uppercase">
