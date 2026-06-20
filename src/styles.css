@@ -2,7 +2,36 @@
 @source "../src";
 @import "tw-animate-css";
 
+@import "@fontsource/playfair-display/400.css";
+@import "@fontsource/playfair-display/700.css";
+@import "@fontsource/playfair-display/700-italic.css";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+
 @custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-sand-50: #fcfaf7;
+  --color-sand-100: #f7f1e9;
+  --color-earth-900: #1c1917;
+  --color-earth-800: #292524;
+  --color-savannah: #c27a3f;
+  --color-savannah-dark: #a1622f;
+  --font-display: "Playfair Display", serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+  --animate-fade-up: fade-up 0.8s cubic-bezier(0.19, 1, 0.22, 1) both;
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
 
 /*
  * Design system definition.
@@ -140,5 +169,9 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
   }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
