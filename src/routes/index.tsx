@@ -44,10 +44,11 @@ const toPi = (usd: number) =>
   `${(usd / PI_GCV_USD).toLocaleString("en-US", { maximumSignificantDigits: 3 })} π`;
 
 function Index() {
+  const { user: piUser, loading: piLoading, signIn: piSignIn, signOut: piSignOut } = usePiAuth();
   return (
     <div className="min-h-screen bg-sand-50 text-earth-900 font-sans selection:bg-savannah/20">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-sand-50/80 backdrop-blur-md border-b border-earth-900/5 px-6 py-4 flex justify-between items-center">
+      <header className="sticky top-0 z-40 bg-sand-50/80 backdrop-blur-md border-b border-earth-900/5 px-6 py-4 flex justify-between items-center gap-4">
         <div className="text-xl font-bold tracking-tighter uppercase font-display italic">
           Kizazi Lodge
         </div>
@@ -60,12 +61,25 @@ function Index() {
           <a href="#gallery" className="hover:text-savannah transition-colors">Gallery</a>
           <a href="#contact" className="hover:text-savannah transition-colors">Contact</a>
         </nav>
-        <a
-          href={`tel:+${WA}`}
-          className="text-[10px] font-medium uppercase tracking-widest text-savannah"
-        >
-          +255 654 617 865
-        </a>
+        <div className="flex items-center gap-3">
+          {piUser ? (
+            <button
+              onClick={piSignOut}
+              className="text-[10px] font-medium uppercase tracking-widest text-savannah border border-savannah/40 rounded-full px-3 py-1.5 hover:bg-savannah/10 transition-colors"
+              title={`Signed in as @${piUser.username}`}
+            >
+              π @{piUser.username}
+            </button>
+          ) : (
+            <button
+              onClick={() => void piSignIn()}
+              disabled={piLoading}
+              className="text-[10px] font-medium uppercase tracking-widest text-sand-50 bg-savannah rounded-full px-3 py-1.5 hover:bg-savannah/90 transition-colors disabled:opacity-60"
+            >
+              {piLoading ? "Connecting…" : "Sign in with Pi"}
+            </button>
+          )}
+        </div>
       </header>
 
       {/* Hero */}
