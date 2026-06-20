@@ -9,16 +9,17 @@ import foodMshikaki from "@/assets/food-mshikaki.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Kizazi Safari Lodge — Karibu Serengeti, Tanzania" },
+      { title: "Kizazi Safari Lodge — Serengeti, Tanzania" },
       {
         name: "description",
         content:
-          "Lodge ya kifahari Serengeti, Tanzania. Weka chumba, agiza chakula na safari kupitia WhatsApp moja kwa moja.",
+          "Luxury safari lodge in the Serengeti, Tanzania. Book rooms, order food and game drives directly via WhatsApp.",
       },
       { property: "og:title", content: "Kizazi Safari Lodge — Serengeti, Tanzania" },
       {
         property: "og:description",
-        content: "Vyumba vya kifahari, chakula cha asili, na safari za porini. Booking kupitia WhatsApp.",
+        content:
+          "Luxury tented suites, authentic cuisine and guided safaris. Booking via WhatsApp.",
       },
       { property: "og:image", content: heroImg },
       { name: "twitter:card", content: "summary_large_image" },
@@ -40,23 +41,25 @@ function Index() {
           Kizazi Lodge
         </div>
         <nav className="hidden md:flex gap-7 text-xs font-medium uppercase tracking-widest">
-          <a href="#rooms" className="hover:text-savannah transition-colors">Vyumba</a>
-          <a href="#menu" className="hover:text-savannah transition-colors">Chakula</a>
-          <a href="#tours" className="hover:text-savannah transition-colors">Safari</a>
-          <a href="#gallery" className="hover:text-savannah transition-colors">Picha</a>
-          <a href="#contact" className="hover:text-savannah transition-colors">Wasiliana</a>
+          <a href="#rooms" className="hover:text-savannah transition-colors">Rooms</a>
+          <a href="#menu" className="hover:text-savannah transition-colors">Dining</a>
+          <a href="#tours" className="hover:text-savannah transition-colors">Safaris</a>
+          <a href="#gallery" className="hover:text-savannah transition-colors">Gallery</a>
+          <a href="#contact" className="hover:text-savannah transition-colors">Contact</a>
         </nav>
-        <div className="flex gap-3 text-[10px] font-medium uppercase tracking-widest">
-          <span className="text-savannah">SW</span>
-          <span className="text-earth-900/30">EN</span>
-        </div>
+        <a
+          href={`tel:+${WA}`}
+          className="text-[10px] font-medium uppercase tracking-widest text-savannah"
+        >
+          +255 654 617 865
+        </a>
       </header>
 
       {/* Hero */}
       <section className="relative h-[85vh] overflow-hidden bg-earth-900">
         <img
           src={heroImg}
-          alt="Hema za kifahari za Kizazi Lodge chini ya mti wa acacia, jua linapozama Serengeti"
+          alt="Luxury canvas safari tents under an acacia tree at golden hour in the Serengeti"
           width={1280}
           height={1664}
           className="absolute inset-0 w-full h-full object-cover opacity-70"
@@ -64,18 +67,18 @@ function Index() {
         <div className="absolute inset-0 bg-gradient-to-t from-earth-900 via-transparent to-transparent" />
         <div className="absolute bottom-12 px-6 max-w-2xl animate-fade-up">
           <span className="inline-block mb-3 px-2 py-1 bg-savannah text-white text-[10px] font-bold tracking-widest uppercase">
-            Serengeti, Tanzania
+            Serengeti · Tanzania
           </span>
           <h1 className="text-5xl md:text-6xl font-display italic text-white mb-6 text-balance leading-[1.1]">
-            Karibu Nyumbani mwa Asili.
+            Welcome to the heart of the wild.
           </h1>
           <a
-            href={wa("Habari! Ningependa kuweka nafasi ya kukaa Kizazi Lodge.")}
+            href={wa("Hello! I would like to enquire about a stay at Kizazi Safari Lodge.")}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 bg-white text-earth-900 px-8 py-4 rounded-full font-semibold transition-transform active:scale-95"
           >
-            <span>Weka Nafasi Sasa</span>
+            <span>Book Your Stay</span>
             <span className="text-xs font-normal opacity-50 italic border-l border-earth-900/20 pl-3">
               via WhatsApp
             </span>
@@ -86,8 +89,8 @@ function Index() {
       {/* Rooms */}
       <section id="rooms" className="px-6 py-20 bg-white scroll-mt-20">
         <div className="mb-10 max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-display italic mb-2">Vyumba na Makaazi</h2>
-          <p className="text-earth-900/60 text-sm">Anasa iliyoundwa kwa roho ya pori.</p>
+          <h2 className="text-3xl md:text-4xl font-display italic mb-2">Rooms & Suites</h2>
+          <p className="text-earth-900/60 text-sm">Luxury tailored for the wild spirit.</p>
         </div>
 
         <div className="max-w-3xl mx-auto grid md:grid-cols-2 gap-10">
@@ -105,17 +108,17 @@ function Index() {
                 <h3 className="text-xl font-bold">{r.name}</h3>
                 <div className="font-mono text-sm bg-sand-100 px-2 py-1 whitespace-nowrap">
                   {r.price}
-                  <span className="text-[10px] opacity-50">/usiku</span>
+                  <span className="text-[10px] opacity-50">/night</span>
                 </div>
               </div>
               <p className="text-sm text-earth-900/70 mb-4">{r.desc}</p>
               <a
-                href={wa(`Habari, nataka kuweka nafasi ya ${r.name}. Tafadhali nielezea zaidi.`)}
+                href={wa(`Hello, I would like to book the ${r.name}. Please share availability and details.`)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block w-full py-4 border border-earth-900/10 text-center rounded-xl font-medium hover:bg-earth-900 hover:text-white transition-colors"
               >
-                Weka Nafasi
+                Book Room
               </a>
             </article>
           ))}
@@ -125,7 +128,7 @@ function Index() {
       {/* Menu */}
       <section id="menu" className="bg-sand-100 px-6 py-20 scroll-mt-20">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-display italic mb-2">Chakula na Vinywaji</h2>
+          <h2 className="text-3xl md:text-4xl font-display italic mb-2">Dining</h2>
           <p className="text-earth-900/50 text-xs uppercase tracking-widest font-medium">
             Cuisine of the Serengeti
           </p>
@@ -134,7 +137,7 @@ function Index() {
         <div className="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-sm border border-earth-900/5">
           <img
             src={foodMshikaki}
-            alt="Mshikaki wa nyama uliopikwa kwa mtindo wa Tanzania"
+            alt="Tanzanian-style grilled beef skewers"
             loading="lazy"
             width={640}
             height={640}
@@ -162,12 +165,12 @@ function Index() {
             </div>
           ))}
           <a
-            href={wa("Habari, ningependa kuagiza chakula. Tafadhali nipatie menyu kamili na bei.")}
+            href={wa("Hello, I would like to place a food order. Please send the full menu and prices.")}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-8 flex items-center justify-center gap-2 bg-savannah hover:bg-savannah-dark text-white w-full py-4 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors"
           >
-            Agiza Chakula
+            Order Food
           </a>
         </div>
       </section>
@@ -175,7 +178,7 @@ function Index() {
       {/* Tours */}
       <section id="tours" className="px-6 py-20 scroll-mt-20">
         <h2 className="text-3xl md:text-4xl font-display italic mb-10 text-center">
-          Safari na Matembezi
+          Safaris & Excursions
         </h2>
         <div className="flex overflow-x-auto gap-4 -mx-6 px-6 pb-6 no-scrollbar snap-x snap-mandatory">
           {TOURS.map((t) => (
@@ -196,12 +199,12 @@ function Index() {
                 <p className="text-xs text-earth-900/60 mb-4">{t.meta}</p>
                 <p className="font-mono text-savannah text-sm mb-4">{t.price}</p>
                 <a
-                  href={wa(`Habari, naulizia kuhusu safari ya "${t.name}". Tafadhali nipatie maelezo.`)}
+                  href={wa(`Hello, I would like more information about the "${t.name}" safari.`)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-auto text-center text-xs font-bold uppercase tracking-widest py-3 border border-earth-900/10 rounded-xl hover:bg-earth-900 hover:text-white transition-colors"
                 >
-                  Uliza / Weka
+                  Enquire / Book
                 </a>
               </div>
             </article>
@@ -211,14 +214,14 @@ function Index() {
 
       {/* Gallery */}
       <section id="gallery" className="px-6 py-20 bg-white scroll-mt-20">
-        <h2 className="text-3xl md:text-4xl font-display italic mb-10">Galari</h2>
+        <h2 className="text-3xl md:text-4xl font-display italic mb-10">Gallery</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-5xl">
           {[heroImg, roomSavannah, roomAcacia, tourDrive, tourBalloon, foodMshikaki].map(
             (src, i) => (
               <img
                 key={i}
                 src={src}
-                alt={`Picha ya Kizazi Lodge ${i + 1}`}
+                alt={`Kizazi Lodge photo ${i + 1}`}
                 loading="lazy"
                 className={`w-full object-cover rounded-xl bg-sand-100 ${
                   i % 5 === 0 ? "aspect-[3/4]" : "aspect-square"
@@ -232,21 +235,23 @@ function Index() {
       {/* Contact / Footer */}
       <footer id="contact" className="bg-earth-900 text-white px-6 pt-20 pb-32 scroll-mt-20">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-display italic mb-6">Wasiliana Nasi</h2>
+          <h2 className="text-3xl md:text-4xl font-display italic mb-6">Get in Touch</h2>
           <div className="space-y-4 text-white/70 text-sm mb-12">
             <p className="flex items-center gap-3">
               <span className="text-savannah font-mono">T:</span>
-              <a href="tel:+255654617865" className="hover:text-white">+255 654 617 865</a>
+              <a href="tel:+255654617865" className="hover:text-white">
+                +255 654 617 865
+              </a>
             </p>
             <p className="flex items-center gap-3">
               <span className="text-savannah font-mono">W:</span>
               <a
-                href={wa("Habari, nina swali kuhusu Kizazi Lodge.")}
+                href={wa("Hello, I have a question about Kizazi Safari Lodge.")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-white"
               >
-                WhatsApp moja kwa moja
+                Chat on WhatsApp
               </a>
             </p>
             <p className="flex items-center gap-3">
@@ -255,7 +260,7 @@ function Index() {
           </div>
           <div className="aspect-video bg-white/5 rounded-2xl grid place-items-center border border-white/10 mb-12 overflow-hidden">
             <iframe
-              title="Ramani ya Kizazi Lodge"
+              title="Kizazi Lodge location map"
               src="https://www.openstreetmap.org/export/embed.html?bbox=34.5%2C-2.7%2C35.3%2C-2.1&layer=mapnik"
               className="w-full h-full"
               loading="lazy"
@@ -269,13 +274,13 @@ function Index() {
 
       {/* Sticky WhatsApp CTA */}
       <a
-        href={wa("Habari! Nataka kuweka nafasi Kizazi Lodge.")}
+        href={wa("Hello! I would like to book a stay at Kizazi Safari Lodge.")}
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 left-6 right-6 z-50 md:left-auto md:right-6 md:w-auto md:px-8 flex items-center justify-center gap-3 bg-savannah hover:bg-savannah-dark text-white py-5 rounded-2xl shadow-xl shadow-savannah/20 transition-all active:scale-95"
       >
         <span className="font-bold uppercase tracking-widest text-xs">
-          Weka Nafasi via WhatsApp
+          Book Now via WhatsApp
         </span>
       </a>
     </div>
@@ -286,57 +291,57 @@ const ROOMS = [
   {
     name: "Savannah Suite",
     price: "TZS 850k",
-    desc: "Kitanda cha king, mtaro binafsi wenye mwonekano wa Mto Grumeti, na bafu ya nje ya mvua.",
+    desc: "King-size bed, private deck overlooking the Grumeti River, and an outdoor rainfall shower.",
     img: roomSavannah,
-    alt: "Ndani ya hema la kifahari la Savannah Suite",
+    alt: "Interior of the luxury Savannah Suite tent",
   },
   {
     name: "Acacia Family Villa",
     price: "TZS 1.4M",
-    desc: "Vyumba viwili vya kulala, bwawa la kuogelea binafsi, na huduma ya butler. Watu wanne.",
+    desc: "Two bedrooms, private plunge pool and personal butler service. Sleeps four guests.",
     img: roomAcacia,
-    alt: "Acacia Family Villa yenye paa la nyasi na mtazamo wa pori",
+    alt: "Acacia Family Villa with thatched roof and savannah views",
   },
 ];
 
 const MENU = [
   {
-    title: "Mlo wa Asubuhi / Breakfast",
+    title: "Breakfast",
     items: [
-      { name: "Mandazi na Chai ya Tangawizi", desc: "Mandazi za kienyeji na chai ya tangawizi", price: "TZS 18,000" },
-      { name: "Omeleti ya Mboga", desc: "Mayai ya kienyeji na mboga safi za bustani", price: "TZS 22,000" },
+      { name: "Mandazi & Ginger Tea", desc: "Traditional East African doughnuts with spiced ginger tea", price: "TZS 18,000" },
+      { name: "Garden Omelette", desc: "Free-range eggs with fresh herbs from our garden", price: "TZS 22,000" },
     ],
   },
   {
-    title: "Mlo wa Jioni / Dinner",
+    title: "Dinner",
     items: [
-      { name: "Mshikaki wa Ng'ombe", desc: "Mishikaki ya nyama iliyokolezwa viungo vya kienyeji", price: "TZS 45,000" },
-      { name: "Wali wa Nazi na Samaki", desc: "Wali wa nazi na samaki wa kuchoma", price: "TZS 52,000" },
-      { name: "Pilau ya Kuku", desc: "Pilau ya viungo na kuku wa kienyeji", price: "TZS 38,000" },
+      { name: "Mshikaki — Beef Skewers", desc: "Char-grilled beef skewers with local spices", price: "TZS 45,000" },
+      { name: "Coconut Rice & Fish", desc: "Coconut rice with pan-seared river fish", price: "TZS 52,000" },
+      { name: "Chicken Pilau", desc: "Aromatic spiced rice with free-range chicken", price: "TZS 38,000" },
     ],
   },
 ];
 
 const TOURS = [
   {
-    name: "Safari ya Mapambazuko",
-    meta: "Saa 5 • Asubuhi • Chai/kahawa ya porini",
-    price: "TZS 320,000 / mtu",
+    name: "Sunrise Game Drive",
+    meta: "5 hours · Morning · Bush coffee & tea",
+    price: "TZS 320,000 / person",
     img: tourDrive,
-    alt: "Gari la safari katika nyasi za Serengeti",
+    alt: "Safari vehicle in the Serengeti grasslands",
   },
   {
-    name: "Puto la Hewa Moto",
-    meta: "Saa 3 • Mtazamo wa angani • Champagne",
-    price: "TZS 1,200,000 / mtu",
+    name: "Hot Air Balloon Safari",
+    meta: "3 hours · Panoramic views · Champagne toast",
+    price: "TZS 1,200,000 / person",
     img: tourBalloon,
-    alt: "Puto la hewa moto juu ya Serengeti",
+    alt: "Hot air balloon over the Serengeti plains",
   },
   {
     name: "Sundowner Bush Walk",
-    meta: "Saa 2 • Jioni • Mwongozaji wa Masai",
-    price: "TZS 180,000 / mtu",
+    meta: "2 hours · Evening · Maasai guide",
+    price: "TZS 180,000 / person",
     img: tourDrive,
-    alt: "Matembezi ya jioni porini",
+    alt: "Guided sundowner bush walk",
   },
 ];
