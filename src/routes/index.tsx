@@ -33,6 +33,11 @@ export const Route = createFileRoute("/")({
 const WA = "255654617865";
 const wa = (msg: string) => `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`;
 
+// Pi Network pricing: Global Consensus Value (GCV) benchmark
+const PI_GCV_USD = 314159;
+const toPi = (usd: number) =>
+  `${(usd / PI_GCV_USD).toLocaleString("en-US", { maximumSignificantDigits: 3 })} π`;
+
 function Index() {
   return (
     <div className="min-h-screen bg-sand-50 text-earth-900 font-sans selection:bg-savannah/20">
@@ -69,11 +74,14 @@ function Index() {
         <div className="absolute inset-0 bg-gradient-to-t from-earth-900 via-transparent to-transparent" />
         <div className="absolute bottom-12 px-6 max-w-2xl animate-fade-up">
           <span className="inline-block mb-3 px-2 py-1 bg-savannah text-white text-[10px] font-bold tracking-widest uppercase">
-            Serengeti · Tanzania
+            Serengeti · Tanzania · Pi Network Accepted
           </span>
-          <h1 className="text-5xl md:text-6xl font-display italic text-white mb-6 text-balance leading-[1.1]">
+          <h1 className="text-5xl md:text-6xl font-display italic text-white mb-4 text-balance leading-[1.1]">
             Welcome to the heart of the wild.
           </h1>
+          <p className="text-white/70 text-sm mb-6">
+            Prices shown in Pi (π) at the Global Consensus Value of $314,159 per Pi.
+          </p>
           <a
             href={wa("Hello! I would like to enquire about a stay at Kizazi Safari Lodge.")}
             target="_blank"
@@ -109,7 +117,7 @@ function Index() {
               <div className="flex justify-between items-start mb-2 gap-3">
                 <h3 className="text-xl font-bold">{r.name}</h3>
                 <div className="font-mono text-sm bg-sand-100 px-2 py-1 whitespace-nowrap">
-                  {r.price}
+                  {r.price}{" "}
                   <span className="text-[10px] opacity-50">/night</span>
                 </div>
               </div>
@@ -135,7 +143,7 @@ function Index() {
           </span>
           <h2 className="text-3xl md:text-4xl font-display italic mb-2">Book Your Stay</h2>
           <p className="text-white/60 text-sm mb-8">
-            Fill in the details below and we'll continue the conversation on WhatsApp.
+            Fill in the details below and we'll continue the conversation on WhatsApp. Payment is accepted in Pi.
           </p>
           <BookingForm />
         </div>
@@ -307,14 +315,14 @@ function Index() {
 const ROOMS = [
   {
     name: "Savannah Suite",
-    price: "TZS 850k",
+    price: toPi(330),
     desc: "King-size bed, private deck overlooking the Grumeti River, and an outdoor rainfall shower.",
     img: roomSavannah,
     alt: "Interior of the luxury Savannah Suite tent",
   },
   {
     name: "Acacia Family Villa",
-    price: "TZS 1.4M",
+    price: toPi(543),
     desc: "Two bedrooms, private plunge pool and personal butler service. Sleeps four guests.",
     img: roomAcacia,
     alt: "Acacia Family Villa with thatched roof and savannah views",
@@ -325,16 +333,16 @@ const MENU = [
   {
     title: "Breakfast",
     items: [
-      { name: "Mandazi & Ginger Tea", desc: "Traditional East African doughnuts with spiced ginger tea", price: "TZS 18,000" },
-      { name: "Garden Omelette", desc: "Free-range eggs with fresh herbs from our garden", price: "TZS 22,000" },
+      { name: "Mandazi & Ginger Tea", desc: "Traditional East African doughnuts with spiced ginger tea", price: toPi(7) },
+      { name: "Garden Omelette", desc: "Free-range eggs with fresh herbs from our garden", price: toPi(8.5) },
     ],
   },
   {
     title: "Dinner",
     items: [
-      { name: "Mshikaki — Beef Skewers", desc: "Char-grilled beef skewers with local spices", price: "TZS 45,000" },
-      { name: "Coconut Rice & Fish", desc: "Coconut rice with pan-seared river fish", price: "TZS 52,000" },
-      { name: "Chicken Pilau", desc: "Aromatic spiced rice with free-range chicken", price: "TZS 38,000" },
+      { name: "Mshikaki — Beef Skewers", desc: "Char-grilled beef skewers with local spices", price: toPi(17.5) },
+      { name: "Coconut Rice & Fish", desc: "Coconut rice with pan-seared river fish", price: toPi(20) },
+      { name: "Chicken Pilau", desc: "Aromatic spiced rice with free-range chicken", price: toPi(15) },
     ],
   },
 ];
@@ -343,21 +351,21 @@ const TOURS = [
   {
     name: "Sunrise Game Drive",
     meta: "5 hours · Morning · Bush coffee & tea",
-    price: "TZS 320,000 / person",
+    price: `${toPi(124)} / person`,
     img: tourDrive,
     alt: "Safari vehicle in the Serengeti grasslands",
   },
   {
     name: "Hot Air Balloon Safari",
     meta: "3 hours · Panoramic views · Champagne toast",
-    price: "TZS 1,200,000 / person",
+    price: `${toPi(465)} / person`,
     img: tourBalloon,
     alt: "Hot air balloon over the Serengeti plains",
   },
   {
     name: "Sundowner Bush Walk",
     meta: "2 hours · Evening · Maasai guide",
-    price: "TZS 180,000 / person",
+    price: `${toPi(70)} / person`,
     img: tourDrive,
     alt: "Guided sundowner bush walk",
   },
