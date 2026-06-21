@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { usePiAuth } from "@/lib/use-pi-auth";
+import { usePiPayment } from "@/lib/use-pi-payment";
 import heroImg from "@/assets/hero.jpg";
 import roomSavannah from "@/assets/room-savannah.jpg";
 import roomAcacia from "@/assets/room-acacia.jpg";
@@ -40,11 +41,36 @@ const wa = (msg: string) => `https://wa.me/${WA}?text=${encodeURIComponent(msg)}
 
 // Pi Network pricing: Global Consensus Value (GCV) benchmark
 const PI_GCV_USD = 314159;
+const toPiAmount = (usd: number) =>
+  Number((usd / PI_GCV_USD).toPrecision(3));
 const toPi = (usd: number) =>
-  `${(usd / PI_GCV_USD).toLocaleString("en-US", { maximumSignificantDigits: 3 })} π`;
+  `${toPiAmount(usd).toLocaleString("en-US", { maximumSignificantDigits: 3 })} π`;
 
 function Index() {
   const { user: piUser, loading: piLoading, signIn: piSignIn, signOut: piSignOut } = usePiAuth();
+  const { pay: piPay, paying: piPaying } = usePiPayment();
+  const [payingRoom, setPayingRoom] = useState<string | null>(null);
+
+  const handleRoomPay = async (room: { name: string; piAmount: number }) => {
+    setPayingRoom(room.name);
+    try {
+      const res = await piPay({
+        amount: room.piAmount,
+        memo: `Kizazi Lodge — ${room.name} (1 night)`,
+        metadata: { kind: "room_booking", room: room.name },
+      });
+      window.open(
+        wa(
+          `Hello, I just paid ${room.piAmount} π for the ${room.name} via Pi Network. Payment ID: ${res.paymentId}, txid: ${res.txid}. Please confirm my booking.`,
+        ),
+        "_blank",
+      );
+    } catch {
+      /* surfaced via hook error */
+    } finally {
+      setPayingRoom(null);
+    }
+  };
   return (
     <div className="min-h-screen bg-sand-50 text-earth-900 font-sans selection:bg-savannah/20">
       {/* Header */}
@@ -142,14 +168,24 @@ function Index() {
                 </div>
               </div>
               <p className="text-sm text-earth-900/70 mb-4">{r.desc}</p>
-              <a
-                href={wa(`Hello, I would like to book the ${r.name}. Please share availability and details.`)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full py-4 border border-earth-900/10 text-center rounded-xl font-medium hover:bg-earth-900 hover:text-white transition-colors"
-              >
-                Book Room
-              </a>
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  href={wa(`Hello, I would like to book the ${r.name}. Please share availability and details.`)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="py-4 border border-earth-900/10 text-center rounded-xl font-medium text-sm hover:bg-earth-900 hover:text-white transition-colors"
+                >
+                  Enquire
+                </a>
+                <button
+                  type="button"
+                  onClick={() => void handleRoomPay(r)}
+                  disabled={piPaying && payingRoom === r.name}
+                  className="py-4 rounded-xl font-medium text-sm bg-savannah text-white hover:bg-savannah/90 transition-colors disabled:opacity-60"
+                >
+                  {piPaying && payingRoom === r.name ? "Paying…" : `Pay ${r.piAmount} π`}
+                </button>
+              </div>
             </article>
           ))}
         </div>
@@ -370,6 +406,7 @@ const ROOMS = [
   {
     name: "Savannah Suite",
     price: toPi(330),
+    piAmount: toPiAmount(330),
     desc: "King-size bed, private deck overlooking the Grumeti River, and an outdoor rainfall shower.",
     img: roomSavannah,
     alt: "Interior of the luxury Savannah Suite tent",
@@ -377,6 +414,7 @@ const ROOMS = [
   {
     name: "Acacia Family Villa",
     price: toPi(543),
+    piAmount: toPiAmount(543),
     desc: "Two bedrooms, private plunge pool and personal butler service. Sleeps four guests.",
     img: roomAcacia,
     alt: "Acacia Family Villa with thatched roof and savannah views",
