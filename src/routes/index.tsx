@@ -506,44 +506,79 @@ const FACILITIES = [
 ];
 
 function BookingForm() {
+  const { pay: piPay, paying, error: piError } = usePiPayment();
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [guests, setGuests] = useState(2);
   const [room, setRoom] = useState("Savannah Suite");
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [confirmation, setConfirmation] = useState<string | null>(null);
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const roomPrice = (name: string) =>
+    ROOMS.find((r) => r.name === name)?.piAmount ?? toPiAmount(330);
+
+  const makeCode = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let s = "";
+    for (let i = 0; i < 4; i++) s += chars[Math.floor(Math.random() * chars.length)];
+    return `KIZ-${s}`;
+  };
+
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const trimmedName = name.trim().slice(0, 80);
+    const trimmedPhone = phone.trim().slice(0, 32);
     if (!trimmedName) return setError("Please enter your full name.");
+    if (!trimmedPhone) return setError("Please enter your phone number.");
     if (!checkIn || !checkOut) return setError("Please choose your check-in and check-out dates.");
     if (new Date(checkOut) <= new Date(checkIn))
       return setError("Check-out must be after check-in.");
     if (guests < 1 || guests > 12) return setError("Number of guests must be between 1 and 12.");
     setError(null);
 
-    const msg = [
-      "Hello Kizazi Safari Lodge, I would like to make a booking:",
-      `• Name: ${trimmedName}`,
-      `• Room: ${room}`,
-      `• Check-in: ${checkIn}`,
-      `• Check-out: ${checkOut}`,
-      `• Guests: ${guests}`,
-      notes.trim() ? `• Notes: ${notes.trim().slice(0, 400)}` : null,
-      "",
-      "Please confirm availability. Asante!",
-    ]
-      .filter(Boolean)
-      .join("\n");
-
-    window.open(wa(msg), "_blank", "noopener,noreferrer");
+    const amount = roomPrice(room);
+    try {
+      await piPay({
+        amount,
+        memo: `Kizazi Lodge — ${room} booking`,
+        metadata: {
+          kind: "room_booking_form",
+          room,
+          name: trimmedName,
+          phone: trimmedPhone,
+          checkIn,
+          checkOut,
+          guests,
+        },
+      });
+      setConfirmation(makeCode());
+    } catch {
+      /* error surfaced via piError */
+    }
   };
 
   const field =
     "w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-savannah";
   const label = "block text-[10px] font-bold uppercase tracking-widest text-white/60 mb-2";
+
+  if (confirmation) {
+    return (
+      <div className="bg-white/5 border border-white/15 rounded-2xl p-8 text-center space-y-4">
+        <div className="text-4xl">🎉</div>
+        <h3 className="text-2xl font-display italic text-white">Booking Confirmed!</h3>
+        <p className="text-white/70 text-sm">Your confirmation code:</p>
+        <p className="text-2xl font-mono font-bold text-purple-300 tracking-widest">
+          {confirmation}
+        </p>
+        <p className="text-white/50 text-xs">
+          Keep this code safe. We'll be in touch on {phone} shortly.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
@@ -613,9 +648,22 @@ function BookingForm() {
           >
             <option className="text-earth-900">Savannah Suite</option>
             <option className="text-earth-900">Acacia Family Villa</option>
-            <option className="text-earth-900">No preference</option>
           </select>
         </div>
+      </div>
+
+      <div>
+        <label htmlFor="bf-phone" className={label}>Phone Number</label>
+        <input
+          id="bf-phone"
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          required
+          autoComplete="tel"
+          placeholder="+255 712 345 678"
+          className={field}
+        />
       </div>
 
       <div>
@@ -631,21 +679,19 @@ function BookingForm() {
         />
       </div>
 
-      {error && (
-        <p className="text-sm text-savannah" role="alert">
-          {error}
+      {(error || piError) && (
+        <p className="text-sm text-red-300" role="alert">
+          {error ?? piError}
         </p>
       )}
 
       <button
         type="submit"
-        className="w-full bg-savannah hover:bg-savannah-dark text-white py-4 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors active:scale-[0.99]"
+        disabled={paying}
+        className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-60 disabled:cursor-not-allowed text-white py-4 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors active:scale-[0.99]"
       >
-        Send Booking via WhatsApp
+        {paying ? "Processing payment…" : `Pay with Pi — ${roomPrice(room)} π`}
       </button>
-      <p className="text-[10px] text-white/40 text-center">
-        Opens WhatsApp with your details pre-filled — no payment online.
-      </p>
     </form>
   );
 }
