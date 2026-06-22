@@ -385,19 +385,6 @@ function Index() {
             © {new Date().getFullYear()} Kizazi Safari Lodge · Tanzania
           </p>
         </div>
-      </footer>
-
-      {/* Sticky WhatsApp CTA */}
-      <a
-        href={wa("Hello! I would like to book a stay at Kizazi Safari Lodge.")}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 left-6 right-6 z-50 md:left-auto md:right-6 md:w-auto md:px-8 flex items-center justify-center gap-3 bg-savannah hover:bg-savannah-dark text-white py-5 rounded-2xl shadow-xl shadow-savannah/20 transition-all active:scale-95"
-      >
-        <span className="font-bold uppercase tracking-widest text-xs">
-          Book Now via WhatsApp
-        </span>
-      </a>
     </div>
   );
 }
