@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { usePiAuth } from "@/lib/use-pi-auth";
 import { usePiPayment } from "@/lib/use-pi-payment";
@@ -400,6 +400,25 @@ function Index() {
               <span className="text-savannah font-mono">A:</span> Northern Corridor, Arusha, Tanzania
             </p>
           </div>
+
+          <div className="border-t border-white/10 pt-10 mb-10">
+            <h3 className="text-sm font-bold uppercase tracking-widest mb-4 text-white/80">Contact Developer</h3>
+            <div className="space-y-2 text-sm text-white/70">
+              <p className="flex items-center gap-3">
+                <span className="text-savannah font-mono">E:</span>
+                <a href="mailto:godsonbaraka2@gmail.com" className="hover:text-white">
+                  godsonbaraka2@gmail.com
+                </a>
+              </p>
+              <p className="flex items-center gap-3">
+                <span className="text-savannah font-mono">P/WA:</span>
+                <a href="tel:+255654617865" className="hover:text-white">
+                  +255 654 617 865
+                </a>
+              </p>
+            </div>
+          </div>
+
           <div className="aspect-video bg-white/5 rounded-2xl grid place-items-center border border-white/10 mb-12 overflow-hidden">
             <iframe
               title="Kizazi Lodge location map"
@@ -408,9 +427,23 @@ function Index() {
               loading="lazy"
             />
           </div>
-          <p className="text-[10px] text-white/30 text-center tracking-widest uppercase">
-            © {new Date().getFullYear()} Kizazi Safari Lodge · Tanzania
-          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-[10px] text-white/30 tracking-widest uppercase border-t border-white/10 pt-8">
+            <p>© {new Date().getFullYear()} Kizazi Safari Lodge · Tanzania</p>
+            <span className="hidden sm:inline">·</span>
+            <a
+              href="https://github.com/kizazi-lodge/app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white/60 transition-colors"
+            >
+              Source code managed on Lovable platform
+            </a>
+            <span className="hidden sm:inline">·</span>
+            <Link to="/privacy-policy" className="hover:text-white/60 transition-colors">
+              Privacy Policy
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
