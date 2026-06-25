@@ -830,7 +830,7 @@ function BookingForm() {
           </p>
         ) : (
           <p className="text-xs font-medium text-white/60 italic">
-            Tafadhali chagua tarehe
+            Please select your dates
           </p>
         )}
       </div>
