@@ -91,10 +91,13 @@ function Index() {
           {piUser ? (
             <button
               onClick={piSignOut}
-              className="text-[10px] font-medium uppercase tracking-widest text-savannah border border-savannah/40 rounded-full px-3 py-1.5 hover:bg-savannah/10 transition-colors"
-              title={`Signed in as @${piUser.username}`}
+              title={`Signed in as @${piUser.username} — click to sign out`}
+              className="flex items-center gap-2 text-[11px] font-semibold text-savannah hover:opacity-80 transition-opacity"
             >
-              π @{piUser.username}
+              <span className="w-7 h-7 rounded-full bg-savannah text-sand-50 flex items-center justify-center text-[11px] font-bold uppercase">
+                {piUser.username.slice(0, 2)}
+              </span>
+              <span className="hidden sm:inline">@{piUser.username}</span>
             </button>
           ) : (
             <button
@@ -605,10 +608,12 @@ const FACILITIES = [
   },
 ];
 
+const PI_PER_NIGHT = 0.00105;
+
 function BookingForm() {
   const { pay: piPay, paying, error: piError } = usePiPayment();
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(""); // digits only, no +255
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [guests, setGuests] = useState(2);
@@ -617,8 +622,16 @@ function BookingForm() {
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
 
-  const roomPrice = (name: string) =>
-    ROOMS.find((r) => r.name === name)?.piAmount ?? toPiAmount(330);
+  const today = new Date().toISOString().split("T")[0];
+
+  const nights = (() => {
+    if (!checkIn || !checkOut) return 0;
+    const ms = new Date(checkOut).getTime() - new Date(checkIn).getTime();
+    const n = Math.round(ms / 86400000);
+    return n > 0 ? n : 0;
+  })();
+
+  const total = +(nights * PI_PER_NIGHT).toFixed(5);
 
   const makeCode = () => {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -630,28 +643,29 @@ function BookingForm() {
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const trimmedName = name.trim().slice(0, 80);
-    const trimmedPhone = phone.trim().slice(0, 32);
+    const digits = phone.replace(/\D/g, "");
     if (!trimmedName) return setError("Please enter your full name.");
-    if (!trimmedPhone) return setError("Please enter your phone number.");
+    if (digits.length !== 9) return setError("Phone number must be 9 digits after +255.");
     if (!checkIn || !checkOut) return setError("Please choose your check-in and check-out dates.");
-    if (new Date(checkOut) <= new Date(checkIn))
-      return setError("Check-out must be after check-in.");
+    if (nights < 1) return setError("Check-out must be after check-in.");
     if (guests < 1 || guests > 12) return setError("Number of guests must be between 1 and 12.");
     setError(null);
 
-    const amount = roomPrice(room);
+    const fullPhone = `+255${digits}`;
+    const amount = total > 0 ? total : PI_PER_NIGHT;
     try {
       await piPay({
         amount,
-        memo: `Kizazi Lodge — ${room} booking`,
+        memo: `Kizazi Lodge — ${room} (${nights} night${nights > 1 ? "s" : ""})`,
         metadata: {
           kind: "room_booking_form",
           room,
           name: trimmedName,
-          phone: trimmedPhone,
+          phone: fullPhone,
           checkIn,
           checkOut,
           guests,
+          nights,
         },
       });
       setConfirmation(makeCode());
@@ -674,7 +688,7 @@ function BookingForm() {
           {confirmation}
         </p>
         <p className="text-white/50 text-xs">
-          Keep this code safe. We'll be in touch on {phone} shortly.
+          Keep this code safe. We'll be in touch on +255{phone.replace(/\D/g, "")} shortly.
         </p>
       </div>
     );
@@ -699,26 +713,30 @@ function BookingForm() {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="bf-in" className={label}>Check-in</label>
+          <label htmlFor="bf-in" className={label}>📅 Check-in</label>
           <input
             id="bf-in"
             type="date"
             value={checkIn}
-            min={new Date().toISOString().split("T")[0]}
+            min={today}
             onChange={(e) => setCheckIn(e.target.value)}
             required
+            aria-label="Chagua tarehe ya kuingia"
+            placeholder="Chagua tarehe ya kuingia"
             className={field}
           />
         </div>
         <div>
-          <label htmlFor="bf-out" className={label}>Check-out</label>
+          <label htmlFor="bf-out" className={label}>📅 Check-out</label>
           <input
             id="bf-out"
             type="date"
             value={checkOut}
-            min={checkIn || new Date().toISOString().split("T")[0]}
+            min={checkIn || today}
             onChange={(e) => setCheckOut(e.target.value)}
             required
+            aria-label="Chagua tarehe ya kutoka"
+            placeholder="Chagua tarehe ya kutoka"
             className={field}
           />
         </div>
@@ -754,16 +772,24 @@ function BookingForm() {
 
       <div>
         <label htmlFor="bf-phone" className={label}>Phone Number</label>
-        <input
-          id="bf-phone"
-          type="tel"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          required
-          autoComplete="tel"
-          placeholder="+255 712 345 678"
-          className={field}
-        />
+        <div className="flex items-stretch rounded-xl overflow-hidden border border-white/15 focus-within:border-savannah bg-white">
+          <span className="px-3 flex items-center text-sm font-semibold text-earth-900 bg-sand-100 border-r border-white/15 select-none">
+            +255
+          </span>
+          <input
+            id="bf-phone"
+            type="tel"
+            inputMode="numeric"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
+            required
+            autoComplete="tel-national"
+            pattern="[0-9]{9}"
+            maxLength={9}
+            className="flex-1 bg-white px-3 py-3 text-sm text-earth-900 focus:outline-none"
+          />
+        </div>
+        <p className="mt-1 text-[10px] text-white/40">9 digits after +255 (e.g. 712345678)</p>
       </div>
 
       <div>
@@ -779,20 +805,43 @@ function BookingForm() {
         />
       </div>
 
+      {/* Booking Summary */}
+      <div className="bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-center">
+        {nights > 0 ? (
+          <p className="text-xs font-semibold uppercase tracking-widest text-white/80">
+            GUESTS: <span className="text-white">{guests}</span>
+            <span className="text-white/30 mx-2">|</span>
+            NIGHTS: <span className="text-white">{nights}</span>
+            <span className="text-white/30 mx-2">|</span>
+            TOTAL: <span className="text-purple-300">{total} π</span>
+          </p>
+        ) : (
+          <p className="text-xs font-medium text-white/60 italic">
+            Tafadhali chagua tarehe
+          </p>
+        )}
+      </div>
+
       {(error || piError) && (
         <p className="text-sm text-red-300" role="alert">
           {error ?? piError}
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={paying}
-        className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-60 disabled:cursor-not-allowed text-white py-4 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors active:scale-[0.99]"
-      >
-        {paying ? "Processing payment…" : `Pay with Pi — ${roomPrice(room)} π`}
-      </button>
+      <div>
+        <button
+          type="submit"
+          disabled={paying}
+          className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-60 disabled:cursor-not-allowed text-white py-4 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors active:scale-[0.99]"
+        >
+          {paying ? "Processing payment…" : `PAY WITH PI — ${PI_PER_NIGHT} π`}
+        </button>
+        <p className="mt-2 text-[11px] text-white/50 text-center">
+          Kwa usiku 1 - {room}. Jumla itaonyeshwa baada ya kuchagua tarehe.
+        </p>
+      </div>
     </form>
   );
 }
+
 
