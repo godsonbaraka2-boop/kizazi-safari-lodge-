@@ -508,7 +508,7 @@ function Index() {
             <p>© {new Date().getFullYear()} Kizazi Safari Lodge · Tanzania</p>
             <span className="hidden sm:inline">·</span>
             <a
-              href="https://github.com/kizazi-lodge/app"
+              href="https://github.com/godsonbaraka2-boop/kizazi-safari-lodge-"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-white/60 transition-colors"
