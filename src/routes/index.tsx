@@ -385,7 +385,7 @@ function Index() {
             <span className="text-xs uppercase tracking-widest text-earth-900/60">Pi Integration Status</span>
           </div>
           <h3 className="text-2xl font-display italic mb-6">
-            Configured for Pi Developer Portal
+            Configured for Vercel Deployment
           </h3>
           <p className="text-sm text-earth-900/60 mb-6">
             These are the official URLs registered for this app in the Pi Developer Portal.
@@ -395,12 +395,12 @@ function Index() {
               <dt className="text-earth-900/50 uppercase text-xs tracking-widest mb-1">Production URL</dt>
               <dd className="break-all">
                 <a
-                  href="https://lodge-chat-pay.lovable.app"
+                  href="https://kizazi-safari-lodge.vercel.app"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline hover:text-savannah"
                 >
-                  https://lodge-chat-pay.lovable.app
+                  https://kizazi-safari-lodge.vercel.app
                 </a>
               </dd>
             </div>
@@ -408,23 +408,29 @@ function Index() {
               <dt className="text-earth-900/50 uppercase text-xs tracking-widest mb-1">Repository</dt>
               <dd className="break-all">
                 <a
-                  href="https://github.com/godsonbaraka2-boop/lodge-chat-pay"
+                  href="https://github.com/godsonbaraka2-boop/kizazi-safari-lodge-"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline hover:text-savannah"
                 >
-                  github.com/godsonbaraka2-boop/lodge-chat-pay
+                  github.com/godsonbaraka2-boop/kizazi-safari-lodge-
                 </a>
               </dd>
             </div>
             <div>
               <dt className="text-earth-900/50 uppercase text-xs tracking-widest mb-1">Privacy Policy</dt>
               <dd className="break-all">
-                <Link to="/privacy-policy" className="underline hover:text-savannah">
-                  /privacy-policy
-                </Link>
+                <a
+                  href="https://kizazi-safari-lodge.vercel.app/privacy-policy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-savannah"
+                >
+                  https://kizazi-safari-lodge.vercel.app/privacy-policy
+                </a>
               </dd>
             </div>
+
             <div>
               <dt className="text-earth-900/50 uppercase text-xs tracking-widest mb-1">Developer Contact</dt>
               <dd>
@@ -502,7 +508,7 @@ function Index() {
             <p>© {new Date().getFullYear()} Kizazi Safari Lodge · Tanzania</p>
             <span className="hidden sm:inline">·</span>
             <a
-              href="https://github.com/kizazi-lodge/app"
+              href="https://github.com/godsonbaraka2-boop/kizazi-safari-lodge-"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-white/60 transition-colors"

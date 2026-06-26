@@ -91,7 +91,7 @@ function PrivacyPolicyPage() {
         <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-white/30 tracking-widest uppercase">
           <p>© {new Date().getFullYear()} Kizazi Safari Lodge · Tanzania</p>
           <a
-            href="https://github.com/kizazi-lodge/app"
+            href="https://github.com/godsonbaraka2-boop/kizazi-safari-lodge-"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-white/60 transition-colors"
