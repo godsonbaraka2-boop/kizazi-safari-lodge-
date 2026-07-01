@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
+import { TestnetGuide } from "@/components/TestnetGuide";
 import { usePiAuth } from "@/lib/use-pi-auth";
 import { usePiPayment } from "@/lib/use-pi-payment";
 import heroImg from "@/assets/hero.jpg";
@@ -73,6 +74,7 @@ function Index() {
   };
   return (
     <div className="min-h-screen bg-sand-50 text-earth-900 font-sans selection:bg-savannah/20">
+      <TestnetGuide />
       {/* Header */}
       <header className="sticky top-0 z-40 bg-sand-50/80 backdrop-blur-md border-b border-earth-900/5 px-6 py-4 flex justify-between items-center gap-4">
         <div className="text-xl font-bold tracking-tighter uppercase font-display italic">
