@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { approvePiPayment, completePiPayment } from "./pi-payments.functions";
 import { ensurePiReady } from "./pi-sdk";
+import { dispatchWrongDomain, isPiAppDomain } from "@/components/WrongDomainModal";
 
 export type PiPaymentInput = {
   amount: number;
@@ -23,7 +24,16 @@ export function usePiPayment() {
   const pay = useCallback(
     (input: PiPaymentInput): Promise<PiPaymentResult> => {
       setError(null);
+
+      if (!isPiAppDomain()) {
+        dispatchWrongDomain();
+        const msg = "Malipo yanaruhusiwa tu kwenye pinet.com. Fungua app kwenye Pi Browser.";
+        setError(msg);
+        return Promise.reject(new Error(msg));
+      }
+
       setPaying(true);
+
 
       return new Promise<PiPaymentResult>((resolve, reject) => {
         ensurePiReady()
