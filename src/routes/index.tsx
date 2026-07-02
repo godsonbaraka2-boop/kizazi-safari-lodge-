@@ -397,12 +397,12 @@ function Index() {
               <dt className="text-earth-900/50 uppercase text-xs tracking-widest mb-1">Production URL</dt>
               <dd className="break-all">
                 <a
-                  href="https://kizazi-safari-lodge.vercel.app"
+                  href="https://kizazilodgeuqc0446.pinet.com"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline hover:text-savannah"
                 >
-                  https://kizazi-safari-lodge.vercel.app
+                  https://kizazilodgeuqc0446.pinet.com
                 </a>
               </dd>
             </div>
@@ -423,12 +423,12 @@ function Index() {
               <dt className="text-earth-900/50 uppercase text-xs tracking-widest mb-1">Privacy Policy</dt>
               <dd className="break-all">
                 <a
-                  href="https://kizazi-safari-lodge.vercel.app/privacy-policy"
+                  href="https://kizazilodgeuqc0446.pinet.com/privacy-policy"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline hover:text-savannah"
                 >
-                  https://kizazi-safari-lodge.vercel.app/privacy-policy
+                  https://kizazilodgeuqc0446.pinet.com/privacy-policy
                 </a>
               </dd>
             </div>
