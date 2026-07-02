@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 const DISMISS_KEY = "kizazi_testnet_guide_dismissed_v1";
 const PI_BROWSER_URL = "https://minepi.com/pi-browser";
-const APP_URL = "https://kizazi-safari-lodge.vercel.app";
+const APP_URL = "https://kizazilodgeuqc0446.pinet.com";
 
 function isPiBrowser(): boolean {
   if (typeof navigator === "undefined") return false;
