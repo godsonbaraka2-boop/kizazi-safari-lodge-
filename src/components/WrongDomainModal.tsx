@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 export const PI_APP_URL = "https://kizazilodgeuqc0446.pinet.com";
 export const WRONG_DOMAIN_EVENT = "kizazi:wrong-domain";
@@ -34,7 +34,7 @@ type Variant = {
   badge: string;
   title: string;
   headerClass: string;
-  body: (host: string) => JSX.Element;
+  body: (host: string) => ReactNode;
 };
 
 function buildVariant(detail: WrongDomainDetail): Variant {
