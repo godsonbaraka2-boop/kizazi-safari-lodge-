@@ -31,8 +31,19 @@ export function usePiPayment() {
       if (!check.ok) {
         const msg = describeDomainCheck(check);
         setError(msg);
-        if (check.reason === "wrong-host" || check.reason === "wrong-origin") {
-          dispatchWrongDomain();
+        if (
+          check.reason === "wrong-host" ||
+          check.reason === "wrong-origin" ||
+          check.reason === "missing-pi-sdk" ||
+          check.reason === "validation-key-missing" ||
+          check.reason === "validation-key-mismatch"
+        ) {
+          dispatchWrongDomain({
+            reason: check.reason,
+            message: msg,
+            currentOrigin: check.currentOrigin,
+            expectedOrigin: check.expectedOrigin,
+          });
         }
         throw new Error(msg);
       }

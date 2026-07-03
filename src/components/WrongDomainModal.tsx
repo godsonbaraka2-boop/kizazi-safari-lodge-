@@ -1,26 +1,130 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 export const PI_APP_URL = "https://kizazilodgeuqc0446.pinet.com";
 export const WRONG_DOMAIN_EVENT = "kizazi:wrong-domain";
+
+export type WrongDomainReason =
+  | "wrong-host"
+  | "wrong-origin"
+  | "missing-pi-sdk"
+  | "validation-key-missing"
+  | "validation-key-mismatch";
+
+export type WrongDomainDetail = {
+  reason?: WrongDomainReason;
+  message?: string;
+  currentOrigin?: string;
+  expectedOrigin?: string;
+};
 
 export function isPiAppDomain(): boolean {
   if (typeof window === "undefined") return true;
   return /(^|\.)pinet\.com$/i.test(window.location.hostname);
 }
 
-export function dispatchWrongDomain() {
+export function dispatchWrongDomain(detail: WrongDomainDetail = {}) {
   if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent(WRONG_DOMAIN_EVENT));
+    window.dispatchEvent(
+      new CustomEvent<WrongDomainDetail>(WRONG_DOMAIN_EVENT, { detail }),
+    );
   }
+}
+
+type Variant = {
+  badge: string;
+  title: string;
+  headerClass: string;
+  body: (host: string) => ReactNode;
+};
+
+function buildVariant(detail: WrongDomainDetail): Variant {
+  const reason = detail.reason;
+
+  if (reason === "validation-key-missing") {
+    return {
+      badge: "Validation key haipatikani",
+      title: "Namba 8 haijakamilika",
+      headerClass: "bg-amber-600 text-white",
+      body: () => (
+        <>
+          <p>
+            Faili <code className="bg-earth-900/5 px-1.5 py-0.5 rounded text-xs">/validation-key.txt</code>{" "}
+            <b>haipatikani</b> kwenye origin hii. Pi Developer Portal
+            (<b>Namba 8 – Domain Verification</b>) inahitaji faili hilo lipatikane kwenye URL rasmi
+            kabla <code className="bg-earth-900/5 px-1 py-0.5 rounded text-xs">Pi.createPayment()</code> haijaruhusiwa.
+          </p>
+          <ul className="list-disc pl-5 space-y-1 text-xs">
+            <li>Fungua Developer Portal → <b>Namba 8: Domain Verification</b>.</li>
+            <li>Nakili validation key upya, iweke kwenye <code>public/validation-key.txt</code>.</li>
+            <li>Deploy tena kisha bonyeza <b>Verify</b> kwenye Developer Portal.</li>
+          </ul>
+        </>
+      ),
+    };
+  }
+
+  if (reason === "validation-key-mismatch") {
+    return {
+      badge: "Validation key haifanani",
+      title: "Namba 8 – key imepitwa na wakati",
+      headerClass: "bg-amber-600 text-white",
+      body: () => (
+        <>
+          <p>
+            Key iliyopo kwenye <code className="bg-earth-900/5 px-1.5 py-0.5 rounded text-xs">/validation-key.txt</code>{" "}
+            <b>haifanani</b> na iliyosajiliwa kwenye Pi Developer Portal (Namba 8).
+            Pi Network imekataa kuanzisha muamala.
+          </p>
+          <ol className="list-decimal pl-5 space-y-1 text-xs">
+            <li>Rudi Developer Portal → <b>Namba 8 – Domain Verification</b>.</li>
+            <li>Bonyeza <b>Regenerate / Copy</b> validation key mpya.</li>
+            <li>Ibandike kwenye <code>public/validation-key.txt</code>, deploy, kisha <b>Verify</b>.</li>
+          </ol>
+        </>
+      ),
+    };
+  }
+
+  if (reason === "missing-pi-sdk") {
+    return {
+      badge: "Pi SDK haijapatikana",
+      title: "Fungua kwenye Pi Browser",
+      headerClass: "bg-earth-900 text-sand-50",
+      body: () => (
+        <p>
+          <code className="bg-earth-900/5 px-1.5 py-0.5 rounded text-xs">window.Pi</code>{" "}
+          haijapakia. Malipo yanahitaji <b>Pi Browser</b> kwenye Testnet mode.
+        </p>
+      ),
+    };
+  }
+
+  return {
+    badge: "Malipo hayaruhusiwi hapa",
+    title: "Domain isiyo sahihi",
+    headerClass: "bg-red-600 text-white",
+    body: (host) => (
+      <>
+        <p>
+          Uko kwenye <code className="bg-earth-900/5 px-1.5 py-0.5 rounded text-xs">{host}</code>.
+          Pi Network inaruhusu <b>miamala ya Pi</b> tu kwenye domain rasmi ya <b>pinet.com</b>.
+        </p>
+        <p>Fungua app kwenye <b>Pi Browser</b> ukitumia URL rasmi ili malipo yafanye kazi:</p>
+      </>
+    ),
+  };
 }
 
 export function WrongDomainModal() {
   const [open, setOpen] = useState(false);
   const [host, setHost] = useState("");
+  const [detail, setDetail] = useState<WrongDomainDetail>({});
 
   useEffect(() => {
-    const handler = () => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<WrongDomainDetail>;
       setHost(window.location.hostname);
+      setDetail(ce.detail ?? {});
       setOpen(true);
     };
     window.addEventListener(WRONG_DOMAIN_EVENT, handler);
@@ -42,6 +146,11 @@ export function WrongDomainModal() {
 
   if (!open) return null;
 
+  const variant = buildVariant(detail);
+  const isKeyIssue =
+    detail.reason === "validation-key-missing" ||
+    detail.reason === "validation-key-mismatch";
+
   return (
     <div
       role="dialog"
@@ -53,22 +162,22 @@ export function WrongDomainModal() {
         onClick={(e) => e.stopPropagation()}
         className="bg-sand-50 text-earth-900 w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden"
       >
-        <div className="px-6 py-4 bg-red-600 text-white">
+        <div className={`px-6 py-4 ${variant.headerClass}`}>
           <div className="text-[10px] uppercase tracking-widest opacity-80">
-            Malipo hayaruhusiwi hapa
+            {variant.badge}
           </div>
-          <h2 className="font-display italic text-xl">Domain isiyo sahihi</h2>
+          <h2 className="font-display italic text-xl">{variant.title}</h2>
         </div>
 
         <div className="px-6 py-5 text-sm space-y-3">
-          <p>
-            Uko kwenye <code className="bg-earth-900/5 px-1.5 py-0.5 rounded text-xs">{host}</code>.
-            Pi Network inaruhusu <b>miamala ya Pi</b> tu kwenye domain rasmi ya
-            <b> pinet.com</b>.
-          </p>
-          <p>
-            Fungua app kwenye <b>Pi Browser</b> ukitumia URL rasmi ili malipo yafanye kazi:
-          </p>
+          {variant.body(host)}
+
+          {detail.message && (
+            <div className="bg-earth-900/5 border-l-4 border-earth-900/40 text-earth-900 p-3 text-xs rounded">
+              <b>Sababu:</b> {detail.message}
+            </div>
+          )}
+
           <div className="flex items-center gap-2">
             <code className="bg-earth-900/5 px-2 py-1 rounded text-[11px] break-all flex-1">
               {PI_APP_URL}
@@ -80,9 +189,19 @@ export function WrongDomainModal() {
               Copy
             </button>
           </div>
+
           <div className="bg-amber-50 border-l-4 border-amber-500 text-amber-900 p-3 text-xs rounded">
-            Kidokezo: Fungua <b>Pi Browser</b> → bandika URL hapo juu →
-            Sign in with Pi → jaribu tena kulipa.
+            {isKeyIssue ? (
+              <>
+                Kidokezo: baada ya ku-deploy key mpya, rudi Developer Portal
+                → <b>Namba 8</b> → bonyeza <b>Verify</b> kabla ujaribu tena kulipa.
+              </>
+            ) : (
+              <>
+                Kidokezo: Fungua <b>Pi Browser</b> → bandika URL hapo juu →
+                Sign in with Pi → jaribu tena kulipa.
+              </>
+            )}
           </div>
         </div>
 
