@@ -619,18 +619,43 @@ const ROOMS = [
 
 const MENU = [
   {
-    title: "Breakfast",
+    titleKey: "menu.breakfast",
     items: [
-      { name: "Mandazi & Ginger Tea", desc: "Traditional East African doughnuts with spiced ginger tea", price: toPi(7) },
-      { name: "Garden Omelette", desc: "Free-range eggs with fresh herbs from our garden", price: toPi(8.5) },
+      { name: "Mandazi & Ginger Tea", desc: "East African doughnuts with spiced ginger tea", price: toPi(7) },
+      { name: "Chapati & Beans", desc: "Warm Swahili flatbread with slow-cooked coconut beans", price: toPi(6) },
+      { name: "Garden Omelette", desc: "Free-range eggs, tomato, onion and fresh garden herbs", price: toPi(8.5) },
+      { name: "Continental Pancakes", desc: "Fluffy pancakes, honey, banana and passion fruit", price: toPi(10) },
+      { name: "Fresh Tropical Fruit Platter", desc: "Mango, pineapple, papaya, watermelon", price: toPi(9) },
     ],
   },
   {
-    title: "Dinner",
+    titleKey: "menu.tanzanian",
     items: [
-      { name: "Mshikaki — Beef Skewers", desc: "Char-grilled beef skewers with local spices", price: toPi(17.5) },
-      { name: "Coconut Rice & Fish", desc: "Coconut rice with pan-seared river fish", price: toPi(20) },
-      { name: "Chicken Pilau", desc: "Aromatic spiced rice with free-range chicken", price: toPi(15) },
+      { name: "Nyama Choma & Ugali", desc: "Char-grilled beef with maize ugali, kachumbari salad", price: toPi(22) },
+      { name: "Mshikaki — Beef Skewers", desc: "Char-grilled marinated beef skewers with pili-pili sauce", price: toPi(17.5) },
+      { name: "Chicken Pilau", desc: "Aromatic spiced rice with free-range chicken and cloves", price: toPi(15) },
+      { name: "Coconut Fish Curry", desc: "Pan-seared river fish in creamy coconut curry, coconut rice", price: toPi(20) },
+      { name: "Ugali & Sukuma Wiki", desc: "Maize ugali with sautéed collard greens, a Tanzanian classic", price: toPi(10) },
+    ],
+  },
+  {
+    titleKey: "menu.international",
+    items: [
+      { name: "Wood-fired Margherita Pizza", desc: "San Marzano tomato, mozzarella, fresh basil", price: toPi(16) },
+      { name: "Serengeti Beef Burger & Fries", desc: "Grass-fed beef, cheddar, caramelised onion, hand-cut fries", price: toPi(18) },
+      { name: "Grilled Chicken Pasta", desc: "Penne, grilled chicken, sun-dried tomato in creamy pesto", price: toPi(17) },
+      { name: "Caesar Salad", desc: "Crisp romaine, parmesan, croutons, house Caesar dressing", price: toPi(12) },
+      { name: "Vegetable Curry & Rice", desc: "Seasonal vegetable coconut curry with basmati rice", price: toPi(13) },
+    ],
+  },
+  {
+    titleKey: "menu.drinks",
+    items: [
+      { name: "Kilimanjaro Single-Origin Coffee", desc: "Freshly brewed Tanzanian arabica, served in a copper pot", price: toPi(5) },
+      { name: "Spiced African Chai", desc: "Black tea steeped with cardamom, cinnamon and ginger", price: toPi(4) },
+      { name: "Fresh Mango & Passion Juice", desc: "Cold-pressed, no added sugar", price: toPi(6) },
+      { name: "Baobab Smoothie", desc: "Baobab superfruit, banana and honey", price: toPi(7) },
+      { name: "Serengeti Sundowner Cocktail", desc: "Rum, hibiscus, ginger, fresh lime — a signature at dusk", price: toPi(12) },
     ],
   },
 ];
@@ -640,8 +665,8 @@ const TOURS = [
     name: "Sunrise Game Drive",
     meta: "5 hours · Morning · Bush coffee & tea",
     price: `${toPi(124)} / person`,
-    img: tourDrive,
-    alt: "Safari vehicle in the Serengeti grasslands",
+    img: tourSafariVehicle,
+    alt: "Tourists on a green safari 4x4 photographing giraffes at sunrise",
   },
   {
     name: "Hot Air Balloon Safari",
@@ -657,7 +682,15 @@ const TOURS = [
     img: tourDrive,
     alt: "Guided sundowner bush walk",
   },
+  {
+    name: "Maasai Cultural Visit",
+    meta: "3 hours · Traditional boma · Beadwork & song",
+    price: `${toPi(55)} / person`,
+    img: cultureMaasai,
+    alt: "Maasai elders in traditional attire at a boma",
+  },
 ];
+
 
 const FACILITIES = [
   {
