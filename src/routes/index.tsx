@@ -137,13 +137,13 @@ function Index() {
         <div className="absolute inset-0 bg-gradient-to-t from-earth-900 via-transparent to-transparent" />
         <div className="absolute bottom-12 px-6 max-w-2xl animate-fade-up">
           <span className="inline-block mb-3 px-2 py-1 bg-savannah text-white text-[10px] font-bold tracking-widest uppercase">
-            Serengeti · Tanzania · Pi Network Accepted
+            {t("hero.badge")}
           </span>
           <h1 className="text-5xl md:text-6xl font-display italic text-white mb-4 text-balance leading-[1.1]">
-            Welcome to the heart of the wild.
+            {t("hero.title")}
           </h1>
           <p className="text-white/70 text-sm mb-6">
-            Prices shown in Pi (π) at the Global Consensus Value of $314,159 per Pi.
+            {t("hero.subtitle")}
           </p>
           <a
             href={wa("Hello! I would like to enquire about a stay at Kizazi Safari Lodge.")}
@@ -151,11 +151,12 @@ function Index() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 bg-white text-earth-900 px-8 py-4 rounded-full font-semibold transition-transform active:scale-95"
           >
-            <span>Book Your Stay</span>
+            <span>{t("hero.book")}</span>
             <span className="text-xs font-normal opacity-50 italic border-l border-earth-900/20 pl-3">
-              via WhatsApp
+              {t("hero.viaWa")}
             </span>
           </a>
+
         </div>
       </section>
 
