@@ -267,11 +267,12 @@ function Index() {
       <section id="menu" className="bg-sand-100 px-6 py-20 scroll-mt-20">
 
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-display italic mb-2">Dining</h2>
+          <h2 className="text-3xl md:text-4xl font-display italic mb-2">{t("menu.title")}</h2>
           <p className="text-earth-900/50 text-xs uppercase tracking-widest font-medium">
-            Cuisine of the Serengeti
+            {t("menu.subtitle")}
           </p>
         </div>
+
 
         <div className="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-sm border border-earth-900/5">
           <img
@@ -283,10 +284,11 @@ function Index() {
             className="w-full aspect-[16/9] object-cover rounded-2xl mb-8"
           />
           {MENU.map((section) => (
-            <div key={section.title} className="mb-8 last:mb-0">
+            <div key={section.titleKey} className="mb-8 last:mb-0">
               <h4 className="text-savannah font-bold text-[10px] tracking-widest uppercase mb-4">
-                {section.title}
+                {t(section.titleKey)}
               </h4>
+
               <div className="space-y-6">
                 {section.items.map((item) => (
                   <div
@@ -309,7 +311,7 @@ function Index() {
             rel="noopener noreferrer"
             className="mt-8 flex items-center justify-center gap-2 bg-savannah hover:bg-savannah-dark text-white w-full py-4 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors"
           >
-            Order Food
+            {t("menu.order")}
           </a>
         </div>
       </section>
@@ -317,39 +319,86 @@ function Index() {
       {/* Tours */}
       <section id="tours" className="px-6 py-20 scroll-mt-20">
         <h2 className="text-3xl md:text-4xl font-display italic mb-10 text-center">
-          Safaris & Excursions
+          {t("tours.title")}
         </h2>
         <div className="flex overflow-x-auto gap-4 -mx-6 px-6 pb-6 no-scrollbar snap-x snap-mandatory">
-          {TOURS.map((t) => (
+          {TOURS.map((tour) => (
             <article
-              key={t.name}
+              key={tour.name}
               className="min-w-[280px] sm:min-w-[320px] bg-white rounded-2xl overflow-hidden border border-earth-900/5 snap-start flex flex-col"
             >
               <img
-                src={t.img}
-                alt={t.alt}
+                src={tour.img}
+                alt={tour.alt}
                 loading="lazy"
                 width={800}
                 height={544}
                 className="w-full aspect-video object-cover bg-sand-100"
               />
               <div className="p-6 flex flex-col flex-1">
-                <h4 className="font-bold mb-2">{t.name}</h4>
-                <p className="text-xs text-earth-900/60 mb-4">{t.meta}</p>
-                <p className="font-mono text-savannah text-sm mb-4">{t.price}</p>
+                <h4 className="font-bold mb-2">{tour.name}</h4>
+                <p className="text-xs text-earth-900/60 mb-4">{tour.meta}</p>
+                <p className="font-mono text-savannah text-sm mb-4">{tour.price}</p>
                 <a
-                  href={wa(`Hello, I would like more information about the "${t.name}" safari.`)}
+                  href={wa(`Hello, I would like more information about the "${tour.name}" safari.`)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-auto text-center text-xs font-bold uppercase tracking-widest py-3 border border-earth-900/10 rounded-xl hover:bg-earth-900 hover:text-white transition-colors"
                 >
-                  Enquire / Book
+                  {t("tours.enquire")}
                 </a>
               </div>
             </article>
           ))}
         </div>
       </section>
+
+      {/* Culture & Remote Work */}
+      <section id="culture" className="bg-sand-100 px-6 py-20 scroll-mt-20">
+        <div className="max-w-5xl mx-auto text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-display italic mb-2">{t("culture.title")}</h2>
+          <p className="text-earth-900/60 text-sm max-w-xl mx-auto">{t("culture.subtitle")}</p>
+        </div>
+        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-6">
+          <article className="group relative overflow-hidden rounded-3xl bg-earth-900">
+            <img
+              src={cultureMaasai}
+              alt="Maasai elders in traditional red shuka robes and beaded jewelry at sunset"
+              loading="lazy"
+              width={1280}
+              height={832}
+              className="w-full aspect-[4/3] object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+            />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-earth-900 via-earth-900/60 to-transparent p-6 pt-16">
+              <span className="text-[10px] uppercase tracking-widest text-savannah font-bold">
+                Maasai Heritage
+              </span>
+              <h3 className="text-white font-display italic text-2xl mt-1">
+                Traditional Boma Experience
+              </h3>
+            </div>
+          </article>
+          <article className="group relative overflow-hidden rounded-3xl bg-earth-900">
+            <img
+              src={lodgeCoffeeWorkspace}
+              alt="Tourists with laptops and a steaming coffee cup on a wooden deck overlooking the savannah"
+              loading="lazy"
+              width={1280}
+              height={832}
+              className="w-full aspect-[4/3] object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+            />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-earth-900 via-earth-900/60 to-transparent p-6 pt-16">
+              <span className="text-[10px] uppercase tracking-widest text-savannah font-bold">
+                Coffee · Wi-Fi · Wild Views
+              </span>
+              <h3 className="text-white font-display italic text-2xl mt-1">
+                Work Remotely from the Savannah
+              </h3>
+            </div>
+          </article>
+        </div>
+      </section>
+
 
       {/* Gallery */}
       <section id="gallery" className="px-6 py-20 bg-white scroll-mt-20">
