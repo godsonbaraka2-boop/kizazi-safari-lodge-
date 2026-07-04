@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 
 import { WrongDomainModal } from "@/components/WrongDomainModal";
+import { LanguageSwitcher, useT } from "@/lib/i18n";
 import { usePiAuth } from "@/lib/use-pi-auth";
 import { usePiPayment } from "@/lib/use-pi-payment";
 import heroImg from "@/assets/hero.jpg";
@@ -14,6 +15,10 @@ import facilitySpa from "@/assets/facility-spa.jpg";
 import facilityPool from "@/assets/facility-pool.jpg";
 import facilityDeck from "@/assets/facility-deck.jpg";
 import facilityBoma from "@/assets/facility-boma.jpg";
+import tourSafariVehicle from "@/assets/tour-safari-vehicle.jpg";
+import cultureMaasai from "@/assets/culture-maasai.jpg";
+import lodgeCoffeeWorkspace from "@/assets/lodge-coffee-workspace.jpg";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -49,9 +54,11 @@ const toPi = (usd: number) =>
   `${toPiAmount(usd).toLocaleString("en-US", { maximumSignificantDigits: 3 })} π`;
 
 function Index() {
+  const { t } = useT();
   const { user: piUser, loading: piLoading, signIn: piSignIn, signOut: piSignOut } = usePiAuth();
   const { pay: piPay, paying: piPaying } = usePiPayment();
   const [payingRoom, setPayingRoom] = useState<string | null>(null);
+
 
   const handleRoomPay = async (room: { name: string; piAmount: number }) => {
     setPayingRoom(room.name);
@@ -82,16 +89,18 @@ function Index() {
         <div className="text-xl font-bold tracking-tighter uppercase font-display italic">
           Kizazi Lodge
         </div>
-        <nav className="hidden md:flex gap-7 text-xs font-medium uppercase tracking-widest">
-          <a href="#rooms" className="hover:text-savannah transition-colors">Rooms</a>
-          <a href="#facilities" className="hover:text-savannah transition-colors">Facilities</a>
-          <a href="#book" className="hover:text-savannah transition-colors">Book</a>
-          <a href="#menu" className="hover:text-savannah transition-colors">Dining</a>
-          <a href="#tours" className="hover:text-savannah transition-colors">Safaris</a>
-          <a href="#gallery" className="hover:text-savannah transition-colors">Gallery</a>
-          <a href="#contact" className="hover:text-savannah transition-colors">Contact</a>
+        <nav className="hidden md:flex gap-6 text-xs font-medium uppercase tracking-widest">
+          <a href="#rooms" className="hover:text-savannah transition-colors">{t("nav.rooms")}</a>
+          <a href="#facilities" className="hover:text-savannah transition-colors">{t("nav.facilities")}</a>
+          <a href="#book" className="hover:text-savannah transition-colors">{t("nav.book")}</a>
+          <a href="#menu" className="hover:text-savannah transition-colors">{t("nav.dining")}</a>
+          <a href="#tours" className="hover:text-savannah transition-colors">{t("nav.safaris")}</a>
+          <a href="#culture" className="hover:text-savannah transition-colors">{t("nav.culture")}</a>
+          <a href="#gallery" className="hover:text-savannah transition-colors">{t("nav.gallery")}</a>
+          <a href="#contact" className="hover:text-savannah transition-colors">{t("nav.contact")}</a>
         </nav>
         <div className="flex items-center gap-3">
+          <LanguageSwitcher />
           {piUser ? (
             <button
               onClick={piSignOut}
@@ -109,11 +118,12 @@ function Index() {
               disabled={piLoading}
               className="text-[10px] font-medium uppercase tracking-widest text-sand-50 bg-savannah rounded-full px-3 py-1.5 hover:bg-savannah/90 transition-colors disabled:opacity-60"
             >
-              {piLoading ? "Connecting…" : "Sign in with Pi"}
+              {piLoading ? t("header.connecting") : t("header.signIn")}
             </button>
           )}
         </div>
       </header>
+
 
       {/* Hero */}
       <section className="relative h-[85vh] overflow-hidden bg-earth-900">
@@ -127,13 +137,13 @@ function Index() {
         <div className="absolute inset-0 bg-gradient-to-t from-earth-900 via-transparent to-transparent" />
         <div className="absolute bottom-12 px-6 max-w-2xl animate-fade-up">
           <span className="inline-block mb-3 px-2 py-1 bg-savannah text-white text-[10px] font-bold tracking-widest uppercase">
-            Serengeti · Tanzania · Pi Network Accepted
+            {t("hero.badge")}
           </span>
           <h1 className="text-5xl md:text-6xl font-display italic text-white mb-4 text-balance leading-[1.1]">
-            Welcome to the heart of the wild.
+            {t("hero.title")}
           </h1>
           <p className="text-white/70 text-sm mb-6">
-            Prices shown in Pi (π) at the Global Consensus Value of $314,159 per Pi.
+            {t("hero.subtitle")}
           </p>
           <a
             href={wa("Hello! I would like to enquire about a stay at Kizazi Safari Lodge.")}
@@ -141,20 +151,22 @@ function Index() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 bg-white text-earth-900 px-8 py-4 rounded-full font-semibold transition-transform active:scale-95"
           >
-            <span>Book Your Stay</span>
+            <span>{t("hero.book")}</span>
             <span className="text-xs font-normal opacity-50 italic border-l border-earth-900/20 pl-3">
-              via WhatsApp
+              {t("hero.viaWa")}
             </span>
           </a>
+
         </div>
       </section>
 
       {/* Rooms */}
       <section id="rooms" className="px-6 py-20 bg-white scroll-mt-20">
         <div className="mb-10 max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-display italic mb-2">Rooms & Suites</h2>
-          <p className="text-earth-900/60 text-sm">Luxury tailored for the wild spirit.</p>
+          <h2 className="text-3xl md:text-4xl font-display italic mb-2">{t("rooms.title")}</h2>
+          <p className="text-earth-900/60 text-sm">{t("rooms.subtitle")}</p>
         </div>
+
 
         <div className="max-w-3xl mx-auto grid md:grid-cols-2 gap-10">
           {ROOMS.map((r) => (
@@ -171,8 +183,9 @@ function Index() {
                 <h3 className="text-xl font-bold">{r.name}</h3>
                 <div className="font-mono text-sm bg-sand-100 px-2 py-1 whitespace-nowrap">
                   {r.price}{" "}
-                  <span className="text-[10px] opacity-50">/night</span>
+                  <span className="text-[10px] opacity-50">/{t("rooms.night")}</span>
                 </div>
+
               </div>
               <p className="text-sm text-earth-900/70 mb-4">{r.desc}</p>
               <div className="grid grid-cols-2 gap-2">
@@ -182,7 +195,8 @@ function Index() {
                   rel="noopener noreferrer"
                   className="py-4 border border-earth-900/10 text-center rounded-xl font-medium text-sm hover:bg-earth-900 hover:text-white transition-colors"
                 >
-                  Enquire
+                  {t("rooms.enquire")}
+
                 </a>
                 <button
                   type="button"
@@ -190,7 +204,7 @@ function Index() {
                   disabled={piPaying && payingRoom === r.name}
                   className="py-4 rounded-xl font-medium text-sm bg-savannah text-white hover:bg-savannah/90 transition-colors disabled:opacity-60"
                 >
-                  {piPaying && payingRoom === r.name ? "Paying…" : `Pay ${r.piAmount} π`}
+                  {piPaying && payingRoom === r.name ? "…" : `${t("rooms.pay")} ${r.piAmount} π`}
                 </button>
               </div>
             </article>
@@ -201,9 +215,10 @@ function Index() {
       {/* Facilities / Attractions */}
       <section id="facilities" className="bg-sand-100 px-6 py-20 scroll-mt-20">
         <div className="mb-10 max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-display italic mb-2">Lodge Attractions</h2>
-          <p className="text-earth-900/60 text-sm">Spaces designed to bring the Serengeti even closer.</p>
+          <h2 className="text-3xl md:text-4xl font-display italic mb-2">{t("facilities.title")}</h2>
+          <p className="text-earth-900/60 text-sm">{t("facilities.subtitle")}</p>
         </div>
+
 
         <div className="max-w-5xl mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {FACILITIES.map((f) => (
@@ -225,7 +240,8 @@ function Index() {
                   rel="noopener noreferrer"
                   className="text-center text-[10px] font-bold uppercase tracking-widest py-3 border border-earth-900/10 rounded-xl hover:bg-earth-900 hover:text-white transition-colors"
                 >
-                  Enquire
+                  {t("rooms.enquire")}
+
                 </a>
               </div>
             </article>
@@ -236,12 +252,13 @@ function Index() {
       <section id="book" className="px-6 py-20 bg-earth-900 text-white scroll-mt-20">
         <div className="max-w-xl mx-auto">
           <span className="inline-block mb-3 px-2 py-1 bg-savannah text-white text-[10px] font-bold tracking-widest uppercase">
-            Reservation
+            {t("book.badge")}
           </span>
-          <h2 className="text-3xl md:text-4xl font-display italic mb-2">Book Your Stay</h2>
+          <h2 className="text-3xl md:text-4xl font-display italic mb-2">{t("book.title")}</h2>
           <p className="text-white/60 text-sm mb-8">
-            Pay securely with Pi. Your booking confirmation and code will be sent to your phone/email.
+            {t("book.subtitle")}
           </p>
+
           <BookingForm />
         </div>
       </section>
@@ -250,11 +267,12 @@ function Index() {
       <section id="menu" className="bg-sand-100 px-6 py-20 scroll-mt-20">
 
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-display italic mb-2">Dining</h2>
+          <h2 className="text-3xl md:text-4xl font-display italic mb-2">{t("menu.title")}</h2>
           <p className="text-earth-900/50 text-xs uppercase tracking-widest font-medium">
-            Cuisine of the Serengeti
+            {t("menu.subtitle")}
           </p>
         </div>
+
 
         <div className="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-sm border border-earth-900/5">
           <img
@@ -266,10 +284,11 @@ function Index() {
             className="w-full aspect-[16/9] object-cover rounded-2xl mb-8"
           />
           {MENU.map((section) => (
-            <div key={section.title} className="mb-8 last:mb-0">
+            <div key={section.titleKey} className="mb-8 last:mb-0">
               <h4 className="text-savannah font-bold text-[10px] tracking-widest uppercase mb-4">
-                {section.title}
+                {t(section.titleKey)}
               </h4>
+
               <div className="space-y-6">
                 {section.items.map((item) => (
                   <div
@@ -292,7 +311,7 @@ function Index() {
             rel="noopener noreferrer"
             className="mt-8 flex items-center justify-center gap-2 bg-savannah hover:bg-savannah-dark text-white w-full py-4 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors"
           >
-            Order Food
+            {t("menu.order")}
           </a>
         </div>
       </section>
@@ -300,33 +319,33 @@ function Index() {
       {/* Tours */}
       <section id="tours" className="px-6 py-20 scroll-mt-20">
         <h2 className="text-3xl md:text-4xl font-display italic mb-10 text-center">
-          Safaris & Excursions
+          {t("tours.title")}
         </h2>
         <div className="flex overflow-x-auto gap-4 -mx-6 px-6 pb-6 no-scrollbar snap-x snap-mandatory">
-          {TOURS.map((t) => (
+          {TOURS.map((tour) => (
             <article
-              key={t.name}
+              key={tour.name}
               className="min-w-[280px] sm:min-w-[320px] bg-white rounded-2xl overflow-hidden border border-earth-900/5 snap-start flex flex-col"
             >
               <img
-                src={t.img}
-                alt={t.alt}
+                src={tour.img}
+                alt={tour.alt}
                 loading="lazy"
                 width={800}
                 height={544}
                 className="w-full aspect-video object-cover bg-sand-100"
               />
               <div className="p-6 flex flex-col flex-1">
-                <h4 className="font-bold mb-2">{t.name}</h4>
-                <p className="text-xs text-earth-900/60 mb-4">{t.meta}</p>
-                <p className="font-mono text-savannah text-sm mb-4">{t.price}</p>
+                <h4 className="font-bold mb-2">{tour.name}</h4>
+                <p className="text-xs text-earth-900/60 mb-4">{tour.meta}</p>
+                <p className="font-mono text-savannah text-sm mb-4">{tour.price}</p>
                 <a
-                  href={wa(`Hello, I would like more information about the "${t.name}" safari.`)}
+                  href={wa(`Hello, I would like more information about the "${tour.name}" safari.`)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-auto text-center text-xs font-bold uppercase tracking-widest py-3 border border-earth-900/10 rounded-xl hover:bg-earth-900 hover:text-white transition-colors"
                 >
-                  Enquire / Book
+                  {t("tours.enquire")}
                 </a>
               </div>
             </article>
@@ -334,11 +353,59 @@ function Index() {
         </div>
       </section>
 
+      {/* Culture & Remote Work */}
+      <section id="culture" className="bg-sand-100 px-6 py-20 scroll-mt-20">
+        <div className="max-w-5xl mx-auto text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-display italic mb-2">{t("culture.title")}</h2>
+          <p className="text-earth-900/60 text-sm max-w-xl mx-auto">{t("culture.subtitle")}</p>
+        </div>
+        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-6">
+          <article className="group relative overflow-hidden rounded-3xl bg-earth-900">
+            <img
+              src={cultureMaasai}
+              alt="Maasai elders in traditional red shuka robes and beaded jewelry at sunset"
+              loading="lazy"
+              width={1280}
+              height={832}
+              className="w-full aspect-[4/3] object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+            />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-earth-900 via-earth-900/60 to-transparent p-6 pt-16">
+              <span className="text-[10px] uppercase tracking-widest text-savannah font-bold">
+                Maasai Heritage
+              </span>
+              <h3 className="text-white font-display italic text-2xl mt-1">
+                Traditional Boma Experience
+              </h3>
+            </div>
+          </article>
+          <article className="group relative overflow-hidden rounded-3xl bg-earth-900">
+            <img
+              src={lodgeCoffeeWorkspace}
+              alt="Tourists with laptops and a steaming coffee cup on a wooden deck overlooking the savannah"
+              loading="lazy"
+              width={1280}
+              height={832}
+              className="w-full aspect-[4/3] object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+            />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-earth-900 via-earth-900/60 to-transparent p-6 pt-16">
+              <span className="text-[10px] uppercase tracking-widest text-savannah font-bold">
+                Coffee · Wi-Fi · Wild Views
+              </span>
+              <h3 className="text-white font-display italic text-2xl mt-1">
+                Work Remotely from the Savannah
+              </h3>
+            </div>
+          </article>
+        </div>
+      </section>
+
+
       {/* Gallery */}
       <section id="gallery" className="px-6 py-20 bg-white scroll-mt-20">
-        <h2 className="text-3xl md:text-4xl font-display italic mb-10">Gallery</h2>
+        <h2 className="text-3xl md:text-4xl font-display italic mb-10">{t("gallery.title")}</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-5xl">
-          {[heroImg, roomSavannah, roomAcacia, facilitySpa, facilityPool, tourDrive, facilityDeck, facilityBoma, tourBalloon, foodMshikaki].map(
+          {[heroImg, cultureMaasai, roomSavannah, lodgeCoffeeWorkspace, tourSafariVehicle, roomAcacia, facilitySpa, facilityPool, tourDrive, facilityDeck, facilityBoma, tourBalloon, foodMshikaki].map(
+
             (src, i) => (
               <img
                 key={i}
@@ -357,10 +424,11 @@ function Index() {
       {/* Need Help */}
       <section id="help" className="bg-sand-100 px-6 py-16 scroll-mt-20">
         <div className="max-w-2xl mx-auto bg-white rounded-3xl border border-earth-900/5 p-8 text-center">
-          <h3 className="text-2xl font-display italic mb-2">Need Help?</h3>
+          <h3 className="text-2xl font-display italic mb-2">{t("help.title")}</h3>
           <p className="text-earth-900/60 text-sm mb-6">
-            For support or payment issues, contact us directly.
+            {t("help.subtitle")}
           </p>
+
           <div className="space-y-2 text-sm">
             <p>
               <span className="text-savannah font-mono mr-2">E:</span>
@@ -457,7 +525,7 @@ function Index() {
       {/* Contact / Footer */}
       <footer id="contact" className="bg-earth-900 text-white px-6 pt-20 pb-20 scroll-mt-20">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-display italic mb-6">Get in Touch</h2>
+          <h2 className="text-3xl md:text-4xl font-display italic mb-6">{t("contact.title")}</h2>
           <div className="space-y-4 text-white/70 text-sm mb-12">
             <p className="flex items-center gap-3">
               <span className="text-savannah font-mono">T:</span>
@@ -551,18 +619,43 @@ const ROOMS = [
 
 const MENU = [
   {
-    title: "Breakfast",
+    titleKey: "menu.breakfast",
     items: [
-      { name: "Mandazi & Ginger Tea", desc: "Traditional East African doughnuts with spiced ginger tea", price: toPi(7) },
-      { name: "Garden Omelette", desc: "Free-range eggs with fresh herbs from our garden", price: toPi(8.5) },
+      { name: "Mandazi & Ginger Tea", desc: "East African doughnuts with spiced ginger tea", price: toPi(7) },
+      { name: "Chapati & Beans", desc: "Warm Swahili flatbread with slow-cooked coconut beans", price: toPi(6) },
+      { name: "Garden Omelette", desc: "Free-range eggs, tomato, onion and fresh garden herbs", price: toPi(8.5) },
+      { name: "Continental Pancakes", desc: "Fluffy pancakes, honey, banana and passion fruit", price: toPi(10) },
+      { name: "Fresh Tropical Fruit Platter", desc: "Mango, pineapple, papaya, watermelon", price: toPi(9) },
     ],
   },
   {
-    title: "Dinner",
+    titleKey: "menu.tanzanian",
     items: [
-      { name: "Mshikaki — Beef Skewers", desc: "Char-grilled beef skewers with local spices", price: toPi(17.5) },
-      { name: "Coconut Rice & Fish", desc: "Coconut rice with pan-seared river fish", price: toPi(20) },
-      { name: "Chicken Pilau", desc: "Aromatic spiced rice with free-range chicken", price: toPi(15) },
+      { name: "Nyama Choma & Ugali", desc: "Char-grilled beef with maize ugali, kachumbari salad", price: toPi(22) },
+      { name: "Mshikaki — Beef Skewers", desc: "Char-grilled marinated beef skewers with pili-pili sauce", price: toPi(17.5) },
+      { name: "Chicken Pilau", desc: "Aromatic spiced rice with free-range chicken and cloves", price: toPi(15) },
+      { name: "Coconut Fish Curry", desc: "Pan-seared river fish in creamy coconut curry, coconut rice", price: toPi(20) },
+      { name: "Ugali & Sukuma Wiki", desc: "Maize ugali with sautéed collard greens, a Tanzanian classic", price: toPi(10) },
+    ],
+  },
+  {
+    titleKey: "menu.international",
+    items: [
+      { name: "Wood-fired Margherita Pizza", desc: "San Marzano tomato, mozzarella, fresh basil", price: toPi(16) },
+      { name: "Serengeti Beef Burger & Fries", desc: "Grass-fed beef, cheddar, caramelised onion, hand-cut fries", price: toPi(18) },
+      { name: "Grilled Chicken Pasta", desc: "Penne, grilled chicken, sun-dried tomato in creamy pesto", price: toPi(17) },
+      { name: "Caesar Salad", desc: "Crisp romaine, parmesan, croutons, house Caesar dressing", price: toPi(12) },
+      { name: "Vegetable Curry & Rice", desc: "Seasonal vegetable coconut curry with basmati rice", price: toPi(13) },
+    ],
+  },
+  {
+    titleKey: "menu.drinks",
+    items: [
+      { name: "Kilimanjaro Single-Origin Coffee", desc: "Freshly brewed Tanzanian arabica, served in a copper pot", price: toPi(5) },
+      { name: "Spiced African Chai", desc: "Black tea steeped with cardamom, cinnamon and ginger", price: toPi(4) },
+      { name: "Fresh Mango & Passion Juice", desc: "Cold-pressed, no added sugar", price: toPi(6) },
+      { name: "Baobab Smoothie", desc: "Baobab superfruit, banana and honey", price: toPi(7) },
+      { name: "Serengeti Sundowner Cocktail", desc: "Rum, hibiscus, ginger, fresh lime — a signature at dusk", price: toPi(12) },
     ],
   },
 ];
@@ -572,8 +665,8 @@ const TOURS = [
     name: "Sunrise Game Drive",
     meta: "5 hours · Morning · Bush coffee & tea",
     price: `${toPi(124)} / person`,
-    img: tourDrive,
-    alt: "Safari vehicle in the Serengeti grasslands",
+    img: tourSafariVehicle,
+    alt: "Tourists on a green safari 4x4 photographing giraffes at sunrise",
   },
   {
     name: "Hot Air Balloon Safari",
@@ -589,7 +682,15 @@ const TOURS = [
     img: tourDrive,
     alt: "Guided sundowner bush walk",
   },
+  {
+    name: "Maasai Cultural Visit",
+    meta: "3 hours · Traditional boma · Beadwork & song",
+    price: `${toPi(55)} / person`,
+    img: cultureMaasai,
+    alt: "Maasai elders in traditional attire at a boma",
+  },
 ];
+
 
 const FACILITIES = [
   {
