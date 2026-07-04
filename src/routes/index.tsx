@@ -54,9 +54,11 @@ const toPi = (usd: number) =>
   `${toPiAmount(usd).toLocaleString("en-US", { maximumSignificantDigits: 3 })} π`;
 
 function Index() {
+  const { t } = useT();
   const { user: piUser, loading: piLoading, signIn: piSignIn, signOut: piSignOut } = usePiAuth();
   const { pay: piPay, paying: piPaying } = usePiPayment();
   const [payingRoom, setPayingRoom] = useState<string | null>(null);
+
 
   const handleRoomPay = async (room: { name: string; piAmount: number }) => {
     setPayingRoom(room.name);
