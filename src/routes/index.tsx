@@ -89,16 +89,18 @@ function Index() {
         <div className="text-xl font-bold tracking-tighter uppercase font-display italic">
           Kizazi Lodge
         </div>
-        <nav className="hidden md:flex gap-7 text-xs font-medium uppercase tracking-widest">
-          <a href="#rooms" className="hover:text-savannah transition-colors">Rooms</a>
-          <a href="#facilities" className="hover:text-savannah transition-colors">Facilities</a>
-          <a href="#book" className="hover:text-savannah transition-colors">Book</a>
-          <a href="#menu" className="hover:text-savannah transition-colors">Dining</a>
-          <a href="#tours" className="hover:text-savannah transition-colors">Safaris</a>
-          <a href="#gallery" className="hover:text-savannah transition-colors">Gallery</a>
-          <a href="#contact" className="hover:text-savannah transition-colors">Contact</a>
+        <nav className="hidden md:flex gap-6 text-xs font-medium uppercase tracking-widest">
+          <a href="#rooms" className="hover:text-savannah transition-colors">{t("nav.rooms")}</a>
+          <a href="#facilities" className="hover:text-savannah transition-colors">{t("nav.facilities")}</a>
+          <a href="#book" className="hover:text-savannah transition-colors">{t("nav.book")}</a>
+          <a href="#menu" className="hover:text-savannah transition-colors">{t("nav.dining")}</a>
+          <a href="#tours" className="hover:text-savannah transition-colors">{t("nav.safaris")}</a>
+          <a href="#culture" className="hover:text-savannah transition-colors">{t("nav.culture")}</a>
+          <a href="#gallery" className="hover:text-savannah transition-colors">{t("nav.gallery")}</a>
+          <a href="#contact" className="hover:text-savannah transition-colors">{t("nav.contact")}</a>
         </nav>
         <div className="flex items-center gap-3">
+          <LanguageSwitcher />
           {piUser ? (
             <button
               onClick={piSignOut}
@@ -116,11 +118,12 @@ function Index() {
               disabled={piLoading}
               className="text-[10px] font-medium uppercase tracking-widest text-sand-50 bg-savannah rounded-full px-3 py-1.5 hover:bg-savannah/90 transition-colors disabled:opacity-60"
             >
-              {piLoading ? "Connecting…" : "Sign in with Pi"}
+              {piLoading ? t("header.connecting") : t("header.signIn")}
             </button>
           )}
         </div>
       </header>
+
 
       {/* Hero */}
       <section className="relative h-[85vh] overflow-hidden bg-earth-900">
