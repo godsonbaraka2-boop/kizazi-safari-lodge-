@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 
 import { WrongDomainModal } from "@/components/WrongDomainModal";
+import { LanguageSwitcher, useT } from "@/lib/i18n";
 import { usePiAuth } from "@/lib/use-pi-auth";
 import { usePiPayment } from "@/lib/use-pi-payment";
 import heroImg from "@/assets/hero.jpg";
@@ -14,6 +15,10 @@ import facilitySpa from "@/assets/facility-spa.jpg";
 import facilityPool from "@/assets/facility-pool.jpg";
 import facilityDeck from "@/assets/facility-deck.jpg";
 import facilityBoma from "@/assets/facility-boma.jpg";
+import tourSafariVehicle from "@/assets/tour-safari-vehicle.jpg";
+import cultureMaasai from "@/assets/culture-maasai.jpg";
+import lodgeCoffeeWorkspace from "@/assets/lodge-coffee-workspace.jpg";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
