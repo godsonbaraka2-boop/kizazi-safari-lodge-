@@ -402,9 +402,10 @@ function Index() {
 
       {/* Gallery */}
       <section id="gallery" className="px-6 py-20 bg-white scroll-mt-20">
-        <h2 className="text-3xl md:text-4xl font-display italic mb-10">Gallery</h2>
+        <h2 className="text-3xl md:text-4xl font-display italic mb-10">{t("gallery.title")}</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-5xl">
-          {[heroImg, roomSavannah, roomAcacia, facilitySpa, facilityPool, tourDrive, facilityDeck, facilityBoma, tourBalloon, foodMshikaki].map(
+          {[heroImg, cultureMaasai, roomSavannah, lodgeCoffeeWorkspace, tourSafariVehicle, roomAcacia, facilitySpa, facilityPool, tourDrive, facilityDeck, facilityBoma, tourBalloon, foodMshikaki].map(
+
             (src, i) => (
               <img
                 key={i}
@@ -423,10 +424,11 @@ function Index() {
       {/* Need Help */}
       <section id="help" className="bg-sand-100 px-6 py-16 scroll-mt-20">
         <div className="max-w-2xl mx-auto bg-white rounded-3xl border border-earth-900/5 p-8 text-center">
-          <h3 className="text-2xl font-display italic mb-2">Need Help?</h3>
+          <h3 className="text-2xl font-display italic mb-2">{t("help.title")}</h3>
           <p className="text-earth-900/60 text-sm mb-6">
-            For support or payment issues, contact us directly.
+            {t("help.subtitle")}
           </p>
+
           <div className="space-y-2 text-sm">
             <p>
               <span className="text-savannah font-mono mr-2">E:</span>
@@ -523,7 +525,7 @@ function Index() {
       {/* Contact / Footer */}
       <footer id="contact" className="bg-earth-900 text-white px-6 pt-20 pb-20 scroll-mt-20">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-display italic mb-6">Get in Touch</h2>
+          <h2 className="text-3xl md:text-4xl font-display italic mb-6">{t("contact.title")}</h2>
           <div className="space-y-4 text-white/70 text-sm mb-12">
             <p className="flex items-center gap-3">
               <span className="text-savannah font-mono">T:</span>
