@@ -163,9 +163,10 @@ function Index() {
       {/* Rooms */}
       <section id="rooms" className="px-6 py-20 bg-white scroll-mt-20">
         <div className="mb-10 max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-display italic mb-2">Rooms & Suites</h2>
-          <p className="text-earth-900/60 text-sm">Luxury tailored for the wild spirit.</p>
+          <h2 className="text-3xl md:text-4xl font-display italic mb-2">{t("rooms.title")}</h2>
+          <p className="text-earth-900/60 text-sm">{t("rooms.subtitle")}</p>
         </div>
+
 
         <div className="max-w-3xl mx-auto grid md:grid-cols-2 gap-10">
           {ROOMS.map((r) => (
@@ -182,8 +183,9 @@ function Index() {
                 <h3 className="text-xl font-bold">{r.name}</h3>
                 <div className="font-mono text-sm bg-sand-100 px-2 py-1 whitespace-nowrap">
                   {r.price}{" "}
-                  <span className="text-[10px] opacity-50">/night</span>
+                  <span className="text-[10px] opacity-50">/{t("rooms.night")}</span>
                 </div>
+
               </div>
               <p className="text-sm text-earth-900/70 mb-4">{r.desc}</p>
               <div className="grid grid-cols-2 gap-2">
@@ -193,7 +195,8 @@ function Index() {
                   rel="noopener noreferrer"
                   className="py-4 border border-earth-900/10 text-center rounded-xl font-medium text-sm hover:bg-earth-900 hover:text-white transition-colors"
                 >
-                  Enquire
+                  {t("rooms.enquire")}
+
                 </a>
                 <button
                   type="button"
@@ -201,7 +204,7 @@ function Index() {
                   disabled={piPaying && payingRoom === r.name}
                   className="py-4 rounded-xl font-medium text-sm bg-savannah text-white hover:bg-savannah/90 transition-colors disabled:opacity-60"
                 >
-                  {piPaying && payingRoom === r.name ? "Paying…" : `Pay ${r.piAmount} π`}
+                  {piPaying && payingRoom === r.name ? "…" : `${t("rooms.pay")} ${r.piAmount} π`}
                 </button>
               </div>
             </article>
@@ -212,9 +215,10 @@ function Index() {
       {/* Facilities / Attractions */}
       <section id="facilities" className="bg-sand-100 px-6 py-20 scroll-mt-20">
         <div className="mb-10 max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-display italic mb-2">Lodge Attractions</h2>
-          <p className="text-earth-900/60 text-sm">Spaces designed to bring the Serengeti even closer.</p>
+          <h2 className="text-3xl md:text-4xl font-display italic mb-2">{t("facilities.title")}</h2>
+          <p className="text-earth-900/60 text-sm">{t("facilities.subtitle")}</p>
         </div>
+
 
         <div className="max-w-5xl mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {FACILITIES.map((f) => (
@@ -236,7 +240,8 @@ function Index() {
                   rel="noopener noreferrer"
                   className="text-center text-[10px] font-bold uppercase tracking-widest py-3 border border-earth-900/10 rounded-xl hover:bg-earth-900 hover:text-white transition-colors"
                 >
-                  Enquire
+                  {t("rooms.enquire")}
+
                 </a>
               </div>
             </article>
@@ -247,12 +252,13 @@ function Index() {
       <section id="book" className="px-6 py-20 bg-earth-900 text-white scroll-mt-20">
         <div className="max-w-xl mx-auto">
           <span className="inline-block mb-3 px-2 py-1 bg-savannah text-white text-[10px] font-bold tracking-widest uppercase">
-            Reservation
+            {t("book.badge")}
           </span>
-          <h2 className="text-3xl md:text-4xl font-display italic mb-2">Book Your Stay</h2>
+          <h2 className="text-3xl md:text-4xl font-display italic mb-2">{t("book.title")}</h2>
           <p className="text-white/60 text-sm mb-8">
-            Pay securely with Pi. Your booking confirmation and code will be sent to your phone/email.
+            {t("book.subtitle")}
           </p>
+
           <BookingForm />
         </div>
       </section>
