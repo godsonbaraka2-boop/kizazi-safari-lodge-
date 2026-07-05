@@ -77,6 +77,29 @@ function Index() {
   const { pay: piPay, paying: piPaying } = usePiPayment();
   const [payingRoom, setPayingRoom] = useState<string | null>(null);
   const [payingItem, setPayingItem] = useState<string | null>(null);
+  const [payingTour, setPayingTour] = useState<string | null>(null);
+
+  const handleTourPay = async (tour: { name: string; piAmount: number }) => {
+    setPayingTour(tour.name);
+    try {
+      const res = await piPay({
+        amount: tour.piAmount,
+        memo: `Kizazi Lodge — ${tour.name}`,
+        metadata: { kind: "tour_booking", tour: tour.name },
+      });
+      window.open(
+        wa(
+          `Hello, I just paid ${tour.piAmount} π for the "${tour.name}" safari via Pi Network. Payment ID: ${res.paymentId}, txid: ${res.txid}. Please confirm my booking.`,
+        ),
+        "_blank",
+      );
+    } catch {
+      /* surfaced via hook */
+    } finally {
+      setPayingTour(null);
+    }
+  };
+
 
   const handleMenuPay = async (item: { name: string; piAmount: number }) => {
     setPayingItem(item.name);
@@ -392,14 +415,27 @@ function Index() {
                 <h4 className="font-bold mb-2">{tour.name}</h4>
                 <p className="text-xs text-earth-900/60 mb-4">{tour.meta}</p>
                 <p className="font-mono text-savannah text-sm mb-4">{tour.price}</p>
-                <a
-                  href={wa(`Hello, I would like more information about the "${tour.name}" safari.`)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-auto text-center text-xs font-bold uppercase tracking-widest py-3 border border-earth-900/10 rounded-xl hover:bg-earth-900 hover:text-white transition-colors"
-                >
-                  {t("tours.enquire")}
-                </a>
+                <div className="mt-auto flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void handleTourPay(tour)}
+                    disabled={piPaying && payingTour === tour.name}
+                    className="text-center text-xs font-bold uppercase tracking-widest py-3 bg-savannah text-white rounded-xl hover:bg-earth-900 transition-colors disabled:opacity-60"
+                  >
+                    {piPaying && payingTour === tour.name
+                      ? "…"
+                      : `${t("rooms.pay")} ${tour.piAmount} π`}
+                  </button>
+                  <a
+                    href={wa(`Hello, I would like more information about the "${tour.name}" safari.`)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-center text-xs font-bold uppercase tracking-widest py-3 border border-earth-900/10 rounded-xl hover:bg-earth-900 hover:text-white transition-colors"
+                  >
+                    {t("tours.enquire")}
+                  </a>
+                </div>
+
               </div>
             </article>
           ))}
@@ -740,6 +776,7 @@ const TOURS = [
     name: "Sunrise Game Drive",
     meta: "5 hours · Morning · Bush coffee & tea",
     price: `${toPi(124)} / person`,
+    piAmount: toPiAmount(124),
     img: tourSafariVehicle,
     alt: "Tourists on a green safari 4x4 photographing giraffes at sunrise",
   },
@@ -747,6 +784,7 @@ const TOURS = [
     name: "Hot Air Balloon Safari",
     meta: "3 hours · Panoramic views · Champagne toast",
     price: `${toPi(465)} / person`,
+    piAmount: toPiAmount(465),
     img: tourBalloon,
     alt: "Hot air balloon over the Serengeti plains",
   },
@@ -754,6 +792,7 @@ const TOURS = [
     name: "Sundowner Bush Walk",
     meta: "2 hours · Evening · Maasai guide",
     price: `${toPi(70)} / person`,
+    piAmount: toPiAmount(70),
     img: tourDrive,
     alt: "Guided sundowner bush walk",
   },
@@ -761,10 +800,12 @@ const TOURS = [
     name: "Maasai Cultural Visit",
     meta: "3 hours · Traditional boma · Beadwork & song",
     price: `${toPi(55)} / person`,
+    piAmount: toPiAmount(55),
     img: cultureMaasai,
     alt: "Maasai elders in traditional attire at a boma",
   },
 ];
+
 
 
 const FACILITIES = [
