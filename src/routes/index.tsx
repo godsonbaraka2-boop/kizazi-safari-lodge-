@@ -740,6 +740,7 @@ const TOURS = [
     name: "Sunrise Game Drive",
     meta: "5 hours · Morning · Bush coffee & tea",
     price: `${toPi(124)} / person`,
+    piAmount: toPiAmount(124),
     img: tourSafariVehicle,
     alt: "Tourists on a green safari 4x4 photographing giraffes at sunrise",
   },
@@ -747,6 +748,7 @@ const TOURS = [
     name: "Hot Air Balloon Safari",
     meta: "3 hours · Panoramic views · Champagne toast",
     price: `${toPi(465)} / person`,
+    piAmount: toPiAmount(465),
     img: tourBalloon,
     alt: "Hot air balloon over the Serengeti plains",
   },
@@ -754,6 +756,7 @@ const TOURS = [
     name: "Sundowner Bush Walk",
     meta: "2 hours · Evening · Maasai guide",
     price: `${toPi(70)} / person`,
+    piAmount: toPiAmount(70),
     img: tourDrive,
     alt: "Guided sundowner bush walk",
   },
@@ -761,10 +764,12 @@ const TOURS = [
     name: "Maasai Cultural Visit",
     meta: "3 hours · Traditional boma · Beadwork & song",
     price: `${toPi(55)} / person`,
+    piAmount: toPiAmount(55),
     img: cultureMaasai,
     alt: "Maasai elders in traditional attire at a boma",
   },
 ];
+
 
 
 const FACILITIES = [
