@@ -2,8 +2,6 @@ import { useCallback, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { approvePiPayment, completePiPayment } from "./pi-payments.functions";
 import { ensurePiReady } from "./pi-sdk";
-import { dispatchWrongDomain } from "@/components/WrongDomainModal";
-import { describeDomainCheck, discoverPiDomain } from "./pi-domain";
 
 export type PiPaymentInput = {
   amount: number;
@@ -25,32 +23,7 @@ export function usePiPayment() {
   const pay = useCallback(
     async (input: PiPaymentInput): Promise<PiPaymentResult> => {
       setError(null);
-
-      // Domain discovery BEFORE createPayment — ensures origin + validation-key.
-      const check = await discoverPiDomain();
-      if (!check.ok) {
-        const msg = describeDomainCheck(check);
-        setError(msg);
-        if (
-          check.reason === "wrong-host" ||
-          check.reason === "wrong-origin" ||
-          check.reason === "missing-pi-sdk" ||
-          check.reason === "validation-key-missing" ||
-          check.reason === "validation-key-mismatch"
-        ) {
-          dispatchWrongDomain({
-            reason: check.reason,
-            message: msg,
-            currentOrigin: check.currentOrigin,
-            expectedOrigin: check.expectedOrigin,
-          });
-        }
-        throw new Error(msg);
-      }
-
       setPaying(true);
-
-
 
       return new Promise<PiPaymentResult>((resolve, reject) => {
         ensurePiReady()

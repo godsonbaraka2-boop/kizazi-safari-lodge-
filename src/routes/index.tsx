@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 
-import { WrongDomainModal } from "@/components/WrongDomainModal";
 import { LanguageSwitcher, useT } from "@/lib/i18n";
 import { usePiAuth } from "@/lib/use-pi-auth";
 import { usePiPayment } from "@/lib/use-pi-payment";
@@ -18,6 +17,25 @@ import facilityBoma from "@/assets/facility-boma.jpg";
 import tourSafariVehicle from "@/assets/tour-safari-vehicle.jpg";
 import cultureMaasai from "@/assets/culture-maasai.jpg";
 import lodgeCoffeeWorkspace from "@/assets/lodge-coffee-workspace.jpg";
+import foodMandazi from "@/assets/food/mandazi.jpg";
+import foodChapatiBeans from "@/assets/food/chapati-beans.jpg";
+import foodOmelette from "@/assets/food/omelette.jpg";
+import foodPancakes from "@/assets/food/pancakes.jpg";
+import foodFruitPlatter from "@/assets/food/fruit-platter.jpg";
+import foodNyamaChoma from "@/assets/food/nyama-choma.jpg";
+import foodPilau from "@/assets/food/pilau.jpg";
+import foodCoconutFish from "@/assets/food/coconut-fish.jpg";
+import foodUgaliSukuma from "@/assets/food/ugali-sukuma.jpg";
+import foodPizza from "@/assets/food/pizza.jpg";
+import foodBurger from "@/assets/food/burger.jpg";
+import foodPasta from "@/assets/food/pasta.jpg";
+import foodCaesar from "@/assets/food/caesar.jpg";
+import foodVegCurry from "@/assets/food/veg-curry.jpg";
+import foodCoffee from "@/assets/food/coffee.jpg";
+import foodChai from "@/assets/food/chai.jpg";
+import foodMangoJuice from "@/assets/food/mango-juice.jpg";
+import foodBaobab from "@/assets/food/baobab.jpg";
+import foodCocktail from "@/assets/food/cocktail.jpg";
 
 
 export const Route = createFileRoute("/")({
@@ -58,6 +76,28 @@ function Index() {
   const { user: piUser, loading: piLoading, signIn: piSignIn, signOut: piSignOut } = usePiAuth();
   const { pay: piPay, paying: piPaying } = usePiPayment();
   const [payingRoom, setPayingRoom] = useState<string | null>(null);
+  const [payingItem, setPayingItem] = useState<string | null>(null);
+
+  const handleMenuPay = async (item: { name: string; piAmount: number }) => {
+    setPayingItem(item.name);
+    try {
+      const res = await piPay({
+        amount: item.piAmount,
+        memo: `Kizazi Lodge — ${item.name}`,
+        metadata: { kind: "food_order", item: item.name },
+      });
+      window.open(
+        wa(
+          `Hello, I just paid ${item.piAmount} π for "${item.name}" via Pi Network. Payment ID: ${res.paymentId}, txid: ${res.txid}. Please prepare my order.`,
+        ),
+        "_blank",
+      );
+    } catch {
+      /* surfaced via hook */
+    } finally {
+      setPayingItem(null);
+    }
+  };
 
 
   const handleRoomPay = async (room: { name: string; piAmount: number }) => {
@@ -82,8 +122,6 @@ function Index() {
   };
   return (
     <div className="min-h-screen bg-sand-50 text-earth-900 font-sans selection:bg-savannah/20">
-      
-      <WrongDomainModal />
       {/* Header */}
       <header className="sticky top-0 z-40 bg-sand-50/80 backdrop-blur-md border-b border-earth-900/5 px-6 py-4 flex justify-between items-center gap-4">
         <div className="text-xl font-bold tracking-tighter uppercase font-display italic">
@@ -274,33 +312,47 @@ function Index() {
         </div>
 
 
-        <div className="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-sm border border-earth-900/5">
-          <img
-            src={foodMshikaki}
-            alt="Tanzanian-style grilled beef skewers"
-            loading="lazy"
-            width={640}
-            height={640}
-            className="w-full aspect-[16/9] object-cover rounded-2xl mb-8"
-          />
+        <div className="max-w-5xl mx-auto">
           {MENU.map((section) => (
-            <div key={section.titleKey} className="mb-8 last:mb-0">
-              <h4 className="text-savannah font-bold text-[10px] tracking-widest uppercase mb-4">
+            <div key={section.titleKey} className="mb-12 last:mb-0">
+              <h4 className="text-savannah font-bold text-[11px] tracking-widest uppercase mb-5 text-center">
                 {t(section.titleKey)}
               </h4>
 
-              <div className="space-y-6">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {section.items.map((item) => (
-                  <div
+                  <article
                     key={item.name}
-                    className="flex justify-between items-start border-b border-earth-900/5 pb-4 gap-4"
+                    className="bg-white rounded-2xl overflow-hidden border border-earth-900/5 flex flex-col"
                   >
-                    <div className="max-w-[70%]">
-                      <p className="font-bold text-sm">{item.name}</p>
-                      <p className="text-xs text-earth-900/50">{item.desc}</p>
+                    <img
+                      src={item.img}
+                      alt={item.name}
+                      loading="lazy"
+                      width={1024}
+                      height={768}
+                      className="w-full aspect-[4/3] object-cover bg-sand-100"
+                    />
+                    <div className="p-4 flex flex-col flex-1">
+                      <div className="flex justify-between items-start gap-3 mb-1">
+                        <p className="font-bold text-sm leading-tight">{item.name}</p>
+                        <span className="font-mono text-xs whitespace-nowrap text-savannah font-bold">
+                          {item.price}
+                        </span>
+                      </div>
+                      <p className="text-xs text-earth-900/60 mb-4 flex-1">{item.desc}</p>
+                      <button
+                        type="button"
+                        onClick={() => void handleMenuPay(item)}
+                        disabled={piPaying && payingItem === item.name}
+                        className="mt-auto w-full py-3 rounded-xl font-bold uppercase text-[11px] tracking-widest bg-savannah text-white hover:bg-savannah/90 transition-colors disabled:opacity-60"
+                      >
+                        {piPaying && payingItem === item.name
+                          ? "…"
+                          : `${t("rooms.pay")} ${item.piAmount} π`}
+                      </button>
                     </div>
-                    <span className="font-mono text-xs whitespace-nowrap">{item.price}</span>
-                  </div>
+                  </article>
                 ))}
               </div>
             </div>
@@ -309,12 +361,13 @@ function Index() {
             href={wa("Hello, I would like to place a food order. Please send the full menu and prices.")}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-8 flex items-center justify-center gap-2 bg-savannah hover:bg-savannah-dark text-white w-full py-4 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors"
+            className="mt-10 flex items-center justify-center gap-2 bg-earth-900 hover:bg-earth-900/90 text-white max-w-md mx-auto py-4 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors"
           >
             {t("menu.order")}
           </a>
         </div>
       </section>
+
 
       {/* Tours */}
       <section id="tours" className="px-6 py-20 scroll-mt-20">
@@ -617,48 +670,70 @@ const ROOMS = [
   },
 ];
 
+type MenuItem = {
+  name: string;
+  desc: string;
+  usd: number;
+  img: string;
+};
+
+const menuItem = (
+  name: string,
+  desc: string,
+  usd: number,
+  img: string,
+): MenuItem & { price: string; piAmount: number } => ({
+  name,
+  desc,
+  usd,
+  img,
+  price: toPi(usd),
+  piAmount: toPiAmount(usd),
+});
+
 const MENU = [
   {
     titleKey: "menu.breakfast",
     items: [
-      { name: "Mandazi & Ginger Tea", desc: "East African doughnuts with spiced ginger tea", price: toPi(7) },
-      { name: "Chapati & Beans", desc: "Warm Swahili flatbread with slow-cooked coconut beans", price: toPi(6) },
-      { name: "Garden Omelette", desc: "Free-range eggs, tomato, onion and fresh garden herbs", price: toPi(8.5) },
-      { name: "Continental Pancakes", desc: "Fluffy pancakes, honey, banana and passion fruit", price: toPi(10) },
-      { name: "Fresh Tropical Fruit Platter", desc: "Mango, pineapple, papaya, watermelon", price: toPi(9) },
+      menuItem("Mandazi & Ginger Tea", "East African doughnuts with spiced ginger tea", 7, foodMandazi),
+      menuItem("Chapati & Beans", "Warm Swahili flatbread with slow-cooked coconut beans", 6, foodChapatiBeans),
+      menuItem("Garden Omelette", "Free-range eggs, tomato, onion and fresh garden herbs", 8.5, foodOmelette),
+      menuItem("Continental Pancakes", "Fluffy pancakes, honey, banana and passion fruit", 10, foodPancakes),
+      menuItem("Fresh Tropical Fruit Platter", "Mango, pineapple, papaya, watermelon", 9, foodFruitPlatter),
     ],
   },
   {
     titleKey: "menu.tanzanian",
     items: [
-      { name: "Nyama Choma & Ugali", desc: "Char-grilled beef with maize ugali, kachumbari salad", price: toPi(22) },
-      { name: "Mshikaki — Beef Skewers", desc: "Char-grilled marinated beef skewers with pili-pili sauce", price: toPi(17.5) },
-      { name: "Chicken Pilau", desc: "Aromatic spiced rice with free-range chicken and cloves", price: toPi(15) },
-      { name: "Coconut Fish Curry", desc: "Pan-seared river fish in creamy coconut curry, coconut rice", price: toPi(20) },
-      { name: "Ugali & Sukuma Wiki", desc: "Maize ugali with sautéed collard greens, a Tanzanian classic", price: toPi(10) },
+      menuItem("Nyama Choma & Ugali", "Char-grilled beef with maize ugali, kachumbari salad", 22, foodNyamaChoma),
+      menuItem("Mshikaki — Beef Skewers", "Char-grilled marinated beef skewers with pili-pili sauce", 17.5, foodMshikaki),
+      menuItem("Chicken Pilau", "Aromatic spiced rice with free-range chicken and cloves", 15, foodPilau),
+      menuItem("Coconut Fish Curry", "Pan-seared river fish in creamy coconut curry, coconut rice", 20, foodCoconutFish),
+      menuItem("Ugali & Sukuma Wiki", "Maize ugali with sautéed collard greens, a Tanzanian classic", 10, foodUgaliSukuma),
     ],
   },
   {
     titleKey: "menu.international",
     items: [
-      { name: "Wood-fired Margherita Pizza", desc: "San Marzano tomato, mozzarella, fresh basil", price: toPi(16) },
-      { name: "Serengeti Beef Burger & Fries", desc: "Grass-fed beef, cheddar, caramelised onion, hand-cut fries", price: toPi(18) },
-      { name: "Grilled Chicken Pasta", desc: "Penne, grilled chicken, sun-dried tomato in creamy pesto", price: toPi(17) },
-      { name: "Caesar Salad", desc: "Crisp romaine, parmesan, croutons, house Caesar dressing", price: toPi(12) },
-      { name: "Vegetable Curry & Rice", desc: "Seasonal vegetable coconut curry with basmati rice", price: toPi(13) },
+      menuItem("Wood-fired Margherita Pizza", "San Marzano tomato, mozzarella, fresh basil", 16, foodPizza),
+      menuItem("Serengeti Beef Burger & Fries", "Grass-fed beef, cheddar, caramelised onion, hand-cut fries", 18, foodBurger),
+      menuItem("Grilled Chicken Pasta", "Penne, grilled chicken, sun-dried tomato in creamy pesto", 17, foodPasta),
+      menuItem("Caesar Salad", "Crisp romaine, parmesan, croutons, house Caesar dressing", 12, foodCaesar),
+      menuItem("Vegetable Curry & Rice", "Seasonal vegetable coconut curry with basmati rice", 13, foodVegCurry),
     ],
   },
   {
     titleKey: "menu.drinks",
     items: [
-      { name: "Kilimanjaro Single-Origin Coffee", desc: "Freshly brewed Tanzanian arabica, served in a copper pot", price: toPi(5) },
-      { name: "Spiced African Chai", desc: "Black tea steeped with cardamom, cinnamon and ginger", price: toPi(4) },
-      { name: "Fresh Mango & Passion Juice", desc: "Cold-pressed, no added sugar", price: toPi(6) },
-      { name: "Baobab Smoothie", desc: "Baobab superfruit, banana and honey", price: toPi(7) },
-      { name: "Serengeti Sundowner Cocktail", desc: "Rum, hibiscus, ginger, fresh lime — a signature at dusk", price: toPi(12) },
+      menuItem("Kilimanjaro Single-Origin Coffee", "Freshly brewed Tanzanian arabica, served in a copper pot", 5, foodCoffee),
+      menuItem("Spiced African Chai", "Black tea steeped with cardamom, cinnamon and ginger", 4, foodChai),
+      menuItem("Fresh Mango & Passion Juice", "Cold-pressed, no added sugar", 6, foodMangoJuice),
+      menuItem("Baobab Smoothie", "Baobab superfruit, banana and honey", 7, foodBaobab),
+      menuItem("Serengeti Sundowner Cocktail", "Rum, hibiscus, ginger, fresh lime — a signature at dusk", 12, foodCocktail),
     ],
   },
 ];
+
 
 const TOURS = [
   {
