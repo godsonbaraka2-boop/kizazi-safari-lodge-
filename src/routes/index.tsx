@@ -76,6 +76,28 @@ function Index() {
   const { user: piUser, loading: piLoading, signIn: piSignIn, signOut: piSignOut } = usePiAuth();
   const { pay: piPay, paying: piPaying } = usePiPayment();
   const [payingRoom, setPayingRoom] = useState<string | null>(null);
+  const [payingItem, setPayingItem] = useState<string | null>(null);
+
+  const handleMenuPay = async (item: { name: string; piAmount: number }) => {
+    setPayingItem(item.name);
+    try {
+      const res = await piPay({
+        amount: item.piAmount,
+        memo: `Kizazi Lodge — ${item.name}`,
+        metadata: { kind: "food_order", item: item.name },
+      });
+      window.open(
+        wa(
+          `Hello, I just paid ${item.piAmount} π for "${item.name}" via Pi Network. Payment ID: ${res.paymentId}, txid: ${res.txid}. Please prepare my order.`,
+        ),
+        "_blank",
+      );
+    } catch {
+      /* surfaced via hook */
+    } finally {
+      setPayingItem(null);
+    }
+  };
 
 
   const handleRoomPay = async (room: { name: string; piAmount: number }) => {
