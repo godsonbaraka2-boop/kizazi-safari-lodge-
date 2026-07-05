@@ -415,14 +415,27 @@ function Index() {
                 <h4 className="font-bold mb-2">{tour.name}</h4>
                 <p className="text-xs text-earth-900/60 mb-4">{tour.meta}</p>
                 <p className="font-mono text-savannah text-sm mb-4">{tour.price}</p>
-                <a
-                  href={wa(`Hello, I would like more information about the "${tour.name}" safari.`)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-auto text-center text-xs font-bold uppercase tracking-widest py-3 border border-earth-900/10 rounded-xl hover:bg-earth-900 hover:text-white transition-colors"
-                >
-                  {t("tours.enquire")}
-                </a>
+                <div className="mt-auto flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void handleTourPay(tour)}
+                    disabled={piPaying && payingTour === tour.name}
+                    className="text-center text-xs font-bold uppercase tracking-widest py-3 bg-savannah text-white rounded-xl hover:bg-earth-900 transition-colors disabled:opacity-60"
+                  >
+                    {piPaying && payingTour === tour.name
+                      ? "…"
+                      : `${t("rooms.pay")} ${tour.piAmount} π`}
+                  </button>
+                  <a
+                    href={wa(`Hello, I would like more information about the "${tour.name}" safari.`)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-center text-xs font-bold uppercase tracking-widest py-3 border border-earth-900/10 rounded-xl hover:bg-earth-900 hover:text-white transition-colors"
+                  >
+                    {t("tours.enquire")}
+                  </a>
+                </div>
+
               </div>
             </article>
           ))}
