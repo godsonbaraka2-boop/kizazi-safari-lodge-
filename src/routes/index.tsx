@@ -312,33 +312,47 @@ function Index() {
         </div>
 
 
-        <div className="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-sm border border-earth-900/5">
-          <img
-            src={foodMshikaki}
-            alt="Tanzanian-style grilled beef skewers"
-            loading="lazy"
-            width={640}
-            height={640}
-            className="w-full aspect-[16/9] object-cover rounded-2xl mb-8"
-          />
+        <div className="max-w-5xl mx-auto">
           {MENU.map((section) => (
-            <div key={section.titleKey} className="mb-8 last:mb-0">
-              <h4 className="text-savannah font-bold text-[10px] tracking-widest uppercase mb-4">
+            <div key={section.titleKey} className="mb-12 last:mb-0">
+              <h4 className="text-savannah font-bold text-[11px] tracking-widest uppercase mb-5 text-center">
                 {t(section.titleKey)}
               </h4>
 
-              <div className="space-y-6">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {section.items.map((item) => (
-                  <div
+                  <article
                     key={item.name}
-                    className="flex justify-between items-start border-b border-earth-900/5 pb-4 gap-4"
+                    className="bg-white rounded-2xl overflow-hidden border border-earth-900/5 flex flex-col"
                   >
-                    <div className="max-w-[70%]">
-                      <p className="font-bold text-sm">{item.name}</p>
-                      <p className="text-xs text-earth-900/50">{item.desc}</p>
+                    <img
+                      src={item.img}
+                      alt={item.name}
+                      loading="lazy"
+                      width={1024}
+                      height={768}
+                      className="w-full aspect-[4/3] object-cover bg-sand-100"
+                    />
+                    <div className="p-4 flex flex-col flex-1">
+                      <div className="flex justify-between items-start gap-3 mb-1">
+                        <p className="font-bold text-sm leading-tight">{item.name}</p>
+                        <span className="font-mono text-xs whitespace-nowrap text-savannah font-bold">
+                          {item.price}
+                        </span>
+                      </div>
+                      <p className="text-xs text-earth-900/60 mb-4 flex-1">{item.desc}</p>
+                      <button
+                        type="button"
+                        onClick={() => void handleMenuPay(item)}
+                        disabled={piPaying && payingItem === item.name}
+                        className="mt-auto w-full py-3 rounded-xl font-bold uppercase text-[11px] tracking-widest bg-savannah text-white hover:bg-savannah/90 transition-colors disabled:opacity-60"
+                      >
+                        {piPaying && payingItem === item.name
+                          ? "…"
+                          : `${t("rooms.pay")} ${item.piAmount} π`}
+                      </button>
                     </div>
-                    <span className="font-mono text-xs whitespace-nowrap">{item.price}</span>
-                  </div>
+                  </article>
                 ))}
               </div>
             </div>
@@ -347,12 +361,13 @@ function Index() {
             href={wa("Hello, I would like to place a food order. Please send the full menu and prices.")}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-8 flex items-center justify-center gap-2 bg-savannah hover:bg-savannah-dark text-white w-full py-4 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors"
+            className="mt-10 flex items-center justify-center gap-2 bg-earth-900 hover:bg-earth-900/90 text-white max-w-md mx-auto py-4 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors"
           >
             {t("menu.order")}
           </a>
         </div>
       </section>
+
 
       {/* Tours */}
       <section id="tours" className="px-6 py-20 scroll-mt-20">
