@@ -670,48 +670,70 @@ const ROOMS = [
   },
 ];
 
+type MenuItem = {
+  name: string;
+  desc: string;
+  usd: number;
+  img: string;
+};
+
+const menuItem = (
+  name: string,
+  desc: string,
+  usd: number,
+  img: string,
+): MenuItem & { price: string; piAmount: number } => ({
+  name,
+  desc,
+  usd,
+  img,
+  price: toPi(usd),
+  piAmount: toPiAmount(usd),
+});
+
 const MENU = [
   {
     titleKey: "menu.breakfast",
     items: [
-      { name: "Mandazi & Ginger Tea", desc: "East African doughnuts with spiced ginger tea", price: toPi(7) },
-      { name: "Chapati & Beans", desc: "Warm Swahili flatbread with slow-cooked coconut beans", price: toPi(6) },
-      { name: "Garden Omelette", desc: "Free-range eggs, tomato, onion and fresh garden herbs", price: toPi(8.5) },
-      { name: "Continental Pancakes", desc: "Fluffy pancakes, honey, banana and passion fruit", price: toPi(10) },
-      { name: "Fresh Tropical Fruit Platter", desc: "Mango, pineapple, papaya, watermelon", price: toPi(9) },
+      menuItem("Mandazi & Ginger Tea", "East African doughnuts with spiced ginger tea", 7, foodMandazi),
+      menuItem("Chapati & Beans", "Warm Swahili flatbread with slow-cooked coconut beans", 6, foodChapatiBeans),
+      menuItem("Garden Omelette", "Free-range eggs, tomato, onion and fresh garden herbs", 8.5, foodOmelette),
+      menuItem("Continental Pancakes", "Fluffy pancakes, honey, banana and passion fruit", 10, foodPancakes),
+      menuItem("Fresh Tropical Fruit Platter", "Mango, pineapple, papaya, watermelon", 9, foodFruitPlatter),
     ],
   },
   {
     titleKey: "menu.tanzanian",
     items: [
-      { name: "Nyama Choma & Ugali", desc: "Char-grilled beef with maize ugali, kachumbari salad", price: toPi(22) },
-      { name: "Mshikaki — Beef Skewers", desc: "Char-grilled marinated beef skewers with pili-pili sauce", price: toPi(17.5) },
-      { name: "Chicken Pilau", desc: "Aromatic spiced rice with free-range chicken and cloves", price: toPi(15) },
-      { name: "Coconut Fish Curry", desc: "Pan-seared river fish in creamy coconut curry, coconut rice", price: toPi(20) },
-      { name: "Ugali & Sukuma Wiki", desc: "Maize ugali with sautéed collard greens, a Tanzanian classic", price: toPi(10) },
+      menuItem("Nyama Choma & Ugali", "Char-grilled beef with maize ugali, kachumbari salad", 22, foodNyamaChoma),
+      menuItem("Mshikaki — Beef Skewers", "Char-grilled marinated beef skewers with pili-pili sauce", 17.5, foodMshikaki),
+      menuItem("Chicken Pilau", "Aromatic spiced rice with free-range chicken and cloves", 15, foodPilau),
+      menuItem("Coconut Fish Curry", "Pan-seared river fish in creamy coconut curry, coconut rice", 20, foodCoconutFish),
+      menuItem("Ugali & Sukuma Wiki", "Maize ugali with sautéed collard greens, a Tanzanian classic", 10, foodUgaliSukuma),
     ],
   },
   {
     titleKey: "menu.international",
     items: [
-      { name: "Wood-fired Margherita Pizza", desc: "San Marzano tomato, mozzarella, fresh basil", price: toPi(16) },
-      { name: "Serengeti Beef Burger & Fries", desc: "Grass-fed beef, cheddar, caramelised onion, hand-cut fries", price: toPi(18) },
-      { name: "Grilled Chicken Pasta", desc: "Penne, grilled chicken, sun-dried tomato in creamy pesto", price: toPi(17) },
-      { name: "Caesar Salad", desc: "Crisp romaine, parmesan, croutons, house Caesar dressing", price: toPi(12) },
-      { name: "Vegetable Curry & Rice", desc: "Seasonal vegetable coconut curry with basmati rice", price: toPi(13) },
+      menuItem("Wood-fired Margherita Pizza", "San Marzano tomato, mozzarella, fresh basil", 16, foodPizza),
+      menuItem("Serengeti Beef Burger & Fries", "Grass-fed beef, cheddar, caramelised onion, hand-cut fries", 18, foodBurger),
+      menuItem("Grilled Chicken Pasta", "Penne, grilled chicken, sun-dried tomato in creamy pesto", 17, foodPasta),
+      menuItem("Caesar Salad", "Crisp romaine, parmesan, croutons, house Caesar dressing", 12, foodCaesar),
+      menuItem("Vegetable Curry & Rice", "Seasonal vegetable coconut curry with basmati rice", 13, foodVegCurry),
     ],
   },
   {
     titleKey: "menu.drinks",
     items: [
-      { name: "Kilimanjaro Single-Origin Coffee", desc: "Freshly brewed Tanzanian arabica, served in a copper pot", price: toPi(5) },
-      { name: "Spiced African Chai", desc: "Black tea steeped with cardamom, cinnamon and ginger", price: toPi(4) },
-      { name: "Fresh Mango & Passion Juice", desc: "Cold-pressed, no added sugar", price: toPi(6) },
-      { name: "Baobab Smoothie", desc: "Baobab superfruit, banana and honey", price: toPi(7) },
-      { name: "Serengeti Sundowner Cocktail", desc: "Rum, hibiscus, ginger, fresh lime — a signature at dusk", price: toPi(12) },
+      menuItem("Kilimanjaro Single-Origin Coffee", "Freshly brewed Tanzanian arabica, served in a copper pot", 5, foodCoffee),
+      menuItem("Spiced African Chai", "Black tea steeped with cardamom, cinnamon and ginger", 4, foodChai),
+      menuItem("Fresh Mango & Passion Juice", "Cold-pressed, no added sugar", 6, foodMangoJuice),
+      menuItem("Baobab Smoothie", "Baobab superfruit, banana and honey", 7, foodBaobab),
+      menuItem("Serengeti Sundowner Cocktail", "Rum, hibiscus, ginger, fresh lime — a signature at dusk", 12, foodCocktail),
     ],
   },
 ];
+
 
 const TOURS = [
   {
