@@ -77,6 +77,29 @@ function Index() {
   const { pay: piPay, paying: piPaying } = usePiPayment();
   const [payingRoom, setPayingRoom] = useState<string | null>(null);
   const [payingItem, setPayingItem] = useState<string | null>(null);
+  const [payingTour, setPayingTour] = useState<string | null>(null);
+
+  const handleTourPay = async (tour: { name: string; piAmount: number }) => {
+    setPayingTour(tour.name);
+    try {
+      const res = await piPay({
+        amount: tour.piAmount,
+        memo: `Kizazi Lodge — ${tour.name}`,
+        metadata: { kind: "tour_booking", tour: tour.name },
+      });
+      window.open(
+        wa(
+          `Hello, I just paid ${tour.piAmount} π for the "${tour.name}" safari via Pi Network. Payment ID: ${res.paymentId}, txid: ${res.txid}. Please confirm my booking.`,
+        ),
+        "_blank",
+      );
+    } catch {
+      /* surfaced via hook */
+    } finally {
+      setPayingTour(null);
+    }
+  };
+
 
   const handleMenuPay = async (item: { name: string; piAmount: number }) => {
     setPayingItem(item.name);
