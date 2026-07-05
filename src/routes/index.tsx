@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 
-import { WrongDomainModal } from "@/components/WrongDomainModal";
 import { LanguageSwitcher, useT } from "@/lib/i18n";
 import { usePiAuth } from "@/lib/use-pi-auth";
 import { usePiPayment } from "@/lib/use-pi-payment";
@@ -18,6 +17,25 @@ import facilityBoma from "@/assets/facility-boma.jpg";
 import tourSafariVehicle from "@/assets/tour-safari-vehicle.jpg";
 import cultureMaasai from "@/assets/culture-maasai.jpg";
 import lodgeCoffeeWorkspace from "@/assets/lodge-coffee-workspace.jpg";
+import foodMandazi from "@/assets/food/mandazi.jpg";
+import foodChapatiBeans from "@/assets/food/chapati-beans.jpg";
+import foodOmelette from "@/assets/food/omelette.jpg";
+import foodPancakes from "@/assets/food/pancakes.jpg";
+import foodFruitPlatter from "@/assets/food/fruit-platter.jpg";
+import foodNyamaChoma from "@/assets/food/nyama-choma.jpg";
+import foodPilau from "@/assets/food/pilau.jpg";
+import foodCoconutFish from "@/assets/food/coconut-fish.jpg";
+import foodUgaliSukuma from "@/assets/food/ugali-sukuma.jpg";
+import foodPizza from "@/assets/food/pizza.jpg";
+import foodBurger from "@/assets/food/burger.jpg";
+import foodPasta from "@/assets/food/pasta.jpg";
+import foodCaesar from "@/assets/food/caesar.jpg";
+import foodVegCurry from "@/assets/food/veg-curry.jpg";
+import foodCoffee from "@/assets/food/coffee.jpg";
+import foodChai from "@/assets/food/chai.jpg";
+import foodMangoJuice from "@/assets/food/mango-juice.jpg";
+import foodBaobab from "@/assets/food/baobab.jpg";
+import foodCocktail from "@/assets/food/cocktail.jpg";
 
 
 export const Route = createFileRoute("/")({
