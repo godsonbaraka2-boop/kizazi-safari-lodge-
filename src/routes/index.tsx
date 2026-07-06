@@ -7,6 +7,10 @@ import { usePiPayment } from "@/lib/use-pi-payment";
 import heroImg from "@/assets/hero.jpg";
 import roomSavannah from "@/assets/room-savannah.jpg";
 import roomAcacia from "@/assets/room-acacia.jpg";
+import roomKilimanjaro from "@/assets/room-kilimanjaro.jpg";
+import roomManyara from "@/assets/room-manyara.jpg";
+import roomNgorongoro from "@/assets/room-ngorongoro.jpg";
+import lodgeMainBuilding from "@/assets/lodge-main-building.jpg";
 import tourDrive from "@/assets/tour-drive.jpg";
 import tourBalloon from "@/assets/tour-balloon.jpg";
 import foodMshikaki from "@/assets/food-mshikaki.jpg";
@@ -218,6 +222,30 @@ function Index() {
             </span>
           </a>
 
+        </div>
+      </section>
+
+      {/* Signature Lodge Building */}
+      <section className="relative bg-earth-900 text-white">
+        <img
+          src={lodgeMainBuilding}
+          alt="Kizazi Safari Lodge signature African-inspired main building at sunset"
+          loading="lazy"
+          width={1024}
+          height={1024}
+          className="w-full h-[60vh] object-cover opacity-90"
+        />
+        <div className="max-w-3xl mx-auto px-6 py-14 text-center">
+          <span className="inline-block mb-3 px-2 py-1 bg-savannah text-white text-[10px] font-bold tracking-widest uppercase">
+            The Lodge
+          </span>
+          <h2 className="text-3xl md:text-4xl font-display italic mb-3">
+            A landmark of African hospitality
+          </h2>
+          <p className="text-white/70 text-sm md:text-base">
+            Hand-crafted thatched roofs, carved wooden pillars and Maasai stonework — our grand
+            main lodge welcomes you into the heart of the Serengeti.
+          </p>
         </div>
       </section>
 
@@ -493,7 +521,7 @@ function Index() {
       <section id="gallery" className="px-6 py-20 bg-white scroll-mt-20">
         <h2 className="text-3xl md:text-4xl font-display italic mb-10">{t("gallery.title")}</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-5xl">
-          {[heroImg, cultureMaasai, roomSavannah, lodgeCoffeeWorkspace, tourSafariVehicle, roomAcacia, facilitySpa, facilityPool, tourDrive, facilityDeck, facilityBoma, tourBalloon, foodMshikaki].map(
+          {[heroImg, lodgeMainBuilding, cultureMaasai, roomSavannah, roomKilimanjaro, lodgeCoffeeWorkspace, tourSafariVehicle, roomManyara, roomNgorongoro, roomAcacia, facilitySpa, facilityPool, tourDrive, facilityDeck, facilityBoma, tourBalloon, foodMshikaki].map(
 
             (src, i) => (
               <img
@@ -703,6 +731,30 @@ const ROOMS = [
     desc: "Two bedrooms, private plunge pool and personal butler service. Sleeps four guests.",
     img: roomAcacia,
     alt: "Acacia Family Villa with thatched roof and savannah views",
+  },
+  {
+    name: "Kilimanjaro Suite",
+    price: toPi(410),
+    piAmount: toPiAmount(410),
+    desc: "Panoramic window framing snow-capped Kilimanjaro, king bed and warm African textiles.",
+    img: roomKilimanjaro,
+    alt: "Kilimanjaro Suite bedroom with a view of Mount Kilimanjaro at sunrise",
+  },
+  {
+    name: "Manyara Lake Villa",
+    price: toPi(465),
+    piAmount: toPiAmount(465),
+    desc: "Four-poster bed and a private balcony overlooking Lake Manyara and its flamingos.",
+    img: roomManyara,
+    alt: "Manyara Lake Villa with balcony overlooking Lake Manyara",
+  },
+  {
+    name: "Ngorongoro Crater Suite",
+    price: toPi(620),
+    piAmount: toPiAmount(620),
+    desc: "Stone walls, fireplace and floor-to-ceiling windows opening onto the Ngorongoro Crater.",
+    img: roomNgorongoro,
+    alt: "Ngorongoro Crater Suite at dusk with panoramic crater view",
   },
 ];
 
