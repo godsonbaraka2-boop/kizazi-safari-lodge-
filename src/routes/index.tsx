@@ -708,6 +708,30 @@ const ROOMS = [
     img: roomAcacia,
     alt: "Acacia Family Villa with thatched roof and savannah views",
   },
+  {
+    name: "Kilimanjaro Suite",
+    price: toPi(410),
+    piAmount: toPiAmount(410),
+    desc: "Panoramic window framing snow-capped Kilimanjaro, king bed and warm African textiles.",
+    img: roomKilimanjaro,
+    alt: "Kilimanjaro Suite bedroom with a view of Mount Kilimanjaro at sunrise",
+  },
+  {
+    name: "Manyara Lake Villa",
+    price: toPi(465),
+    piAmount: toPiAmount(465),
+    desc: "Four-poster bed and a private balcony overlooking Lake Manyara and its flamingos.",
+    img: roomManyara,
+    alt: "Manyara Lake Villa with balcony overlooking Lake Manyara",
+  },
+  {
+    name: "Ngorongoro Crater Suite",
+    price: toPi(620),
+    piAmount: toPiAmount(620),
+    desc: "Stone walls, fireplace and floor-to-ceiling windows opening onto the Ngorongoro Crater.",
+    img: roomNgorongoro,
+    alt: "Ngorongoro Crater Suite at dusk with panoramic crater view",
+  },
 ];
 
 type MenuItem = {
