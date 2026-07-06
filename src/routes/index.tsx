@@ -225,6 +225,30 @@ function Index() {
         </div>
       </section>
 
+      {/* Signature Lodge Building */}
+      <section className="relative bg-earth-900 text-white">
+        <img
+          src={lodgeMainBuilding}
+          alt="Kizazi Safari Lodge signature African-inspired main building at sunset"
+          loading="lazy"
+          width={1024}
+          height={1024}
+          className="w-full h-[60vh] object-cover opacity-90"
+        />
+        <div className="max-w-3xl mx-auto px-6 py-14 text-center">
+          <span className="inline-block mb-3 px-2 py-1 bg-savannah text-white text-[10px] font-bold tracking-widest uppercase">
+            The Lodge
+          </span>
+          <h2 className="text-3xl md:text-4xl font-display italic mb-3">
+            A landmark of African hospitality
+          </h2>
+          <p className="text-white/70 text-sm md:text-base">
+            Hand-crafted thatched roofs, carved wooden pillars and Maasai stonework — our grand
+            main lodge welcomes you into the heart of the Serengeti.
+          </p>
+        </div>
+      </section>
+
       {/* Rooms */}
       <section id="rooms" className="px-6 py-20 bg-white scroll-mt-20">
         <div className="mb-10 max-w-3xl mx-auto">
