@@ -1,9 +1,13 @@
 // Pi domain discovery/validation utilities.
-// Runs BEFORE Pi.createPayment() to ensure the app is on the
-// approved Pi Network domain and validation-key.txt is served.
+// Runs BEFORE Pi.createPayment() to ensure the app can talk to Pi servers.
+//
+// NOTE: Pi Network allows any verified domain (Checklist Namba 10) — sio pinet.com pekee.
+// Kwa hiyo tunakubali origin yoyote (pinet.com, vercel.app, custom domain, n.k.)
+// ilimradi validation-key.txt ipo sahihi na Pi SDK imepakia.
 
-export const PI_ALLOWED_ORIGINS = [
+export const PI_ALLOWED_ORIGINS: string[] = [
   "https://kizazilodgeuqc0446.pinet.com",
+  // Domain zote za Vercel/custom zinaruhusiwa automatically (tazama isAllowedOrigin).
 ];
 
 export const PI_VALIDATION_KEY =
@@ -26,9 +30,23 @@ export function isPinetHost(host: string): boolean {
   return /(^|\.)pinet\.com$/i.test(host);
 }
 
+export function isAllowedOrigin(origin: string, host: string): boolean {
+  if (PI_ALLOWED_ORIGINS.includes(origin)) return true;
+  if (isPinetHost(host)) return true;
+  // Vercel deployments (production + previews)
+  if (/(^|\.)vercel\.app$/i.test(host)) return true;
+  // Lovable preview/published
+  if (/(^|\.)lovable\.app$/i.test(host)) return true;
+  // Localhost kwa dev
+  if (host === "localhost" || host === "127.0.0.1") return true;
+  return false;
+}
+
 /**
- * Verify the currently loaded page is on an approved Pi Network origin
- * AND that /validation-key.txt returns the expected key.
+ * Verify the currently loaded page can run Pi payments:
+ *  - origin inakubalika (pinet.com / vercel.app / lovable.app / localhost)
+ *  - Pi SDK imepakia
+ *  - /validation-key.txt inarudisha key sahihi
  */
 export async function discoverPiDomain(): Promise<DomainCheck> {
   if (typeof window === "undefined") {
@@ -38,16 +56,7 @@ export async function discoverPiDomain(): Promise<DomainCheck> {
   const currentOrigin = window.location.origin;
   const host = window.location.hostname;
 
-  if (!isPinetHost(host)) {
-    return {
-      ok: false,
-      reason: "wrong-host",
-      currentOrigin,
-      expectedOrigin: PI_ALLOWED_ORIGINS[0],
-    };
-  }
-
-  if (!PI_ALLOWED_ORIGINS.includes(currentOrigin)) {
+  if (!isAllowedOrigin(currentOrigin, host)) {
     return {
       ok: false,
       reason: "wrong-origin",
@@ -84,7 +93,7 @@ export function describeDomainCheck(check: DomainCheck): string {
       return "Hakuna browser environment.";
     case "wrong-host":
     case "wrong-origin":
-      return `Uko kwenye ${check.currentOrigin ?? "domain isiyo sahihi"}. Malipo yanaruhusiwa tu kwenye ${check.expectedOrigin}.`;
+      return `Origin ${check.currentOrigin ?? ""} haijaruhusiwa kwa miamala ya Pi.`;
     case "missing-pi-sdk":
       return "Pi SDK haijapatikana. Fungua app ndani ya Pi Browser.";
     case "validation-key-missing":
