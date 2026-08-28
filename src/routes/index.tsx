@@ -887,8 +887,6 @@ const FACILITIES = [
   },
 ];
 
-const PI_PER_NIGHT = 0.00105;
-
 function BookingForm() {
   const { pay: piPay, paying, error: piError } = usePiPayment();
   const [name, setName] = useState("");
@@ -896,12 +894,16 @@ function BookingForm() {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [guests, setGuests] = useState(2);
-  const [room, setRoom] = useState("Savannah Suite");
+  const [room, setRoom] = useState(ROOMS[0].name);
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
 
   const today = new Date().toISOString().split("T")[0];
+
+  // Nightly rate follows the selected room (Pi at GCV).
+  const PI_PER_NIGHT =
+    ROOMS.find((r) => r.name === room)?.piAmount ?? ROOMS[0].piAmount;
 
   const nights = (() => {
     if (!checkIn || !checkOut) return 0;
@@ -910,7 +912,7 @@ function BookingForm() {
     return n > 0 ? n : 0;
   })();
 
-  const total = +(nights * PI_PER_NIGHT).toFixed(5);
+  const total = +(nights * PI_PER_NIGHT).toFixed(6);
 
   const makeCode = () => {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
