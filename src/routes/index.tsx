@@ -1067,8 +1067,11 @@ function BookingForm() {
             onChange={(e) => setRoom(e.target.value)}
             className={field}
           >
-            <option className="text-earth-900">Savannah Suite</option>
-            <option className="text-earth-900">Acacia Family Villa</option>
+            {ROOMS.map((r) => (
+              <option key={r.name} value={r.name} className="text-earth-900">
+                {r.name}
+              </option>
+            ))}
           </select>
         </div>
       </div>
