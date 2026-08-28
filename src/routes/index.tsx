@@ -708,6 +708,10 @@ function Index() {
             <Link to="/privacy-policy" className="hover:text-white/60 transition-colors">
               Privacy Policy
             </Link>
+            <span className="hidden sm:inline">·</span>
+            <Link to="/terms" className="hover:text-white/60 transition-colors">
+              Terms of Service
+            </Link>
           </div>
         </div>
       </footer>
