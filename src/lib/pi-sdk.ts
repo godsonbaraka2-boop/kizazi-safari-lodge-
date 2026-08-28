@@ -64,15 +64,25 @@ function loadPiSdk(): Promise<PiSdk> {
   });
 }
 
-// Sandbox = true kwa Testnet (Pi Developer Portal checklist step 10).
-// Badilisha kuwa false ukishakubaliwa Mainnet.
-const PI_SANDBOX = true;
+// Sandbox (Testnet) hutumika tu kwenye dev/preview hosts.
+// Kwenye pinet.com / production domain, app inaendesha Mainnet ready mode
+// ili iweze kuingia Pi ecosystem.
+function isSandboxHost(): boolean {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname;
+  return (
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    /(^|\.)lovable\.app$/i.test(host) ||
+    /(^|\.)vercel\.app$/i.test(host)
+  );
+}
 
 let initPromise: Promise<PiSdk> | null = null;
 export function ensurePiReady(): Promise<PiSdk> {
   if (!initPromise) {
     initPromise = loadPiSdk().then(async (Pi) => {
-      await Promise.resolve(Pi.init({ version: "2.0", sandbox: PI_SANDBOX }));
+      await Promise.resolve(Pi.init({ version: "2.0", sandbox: isSandboxHost() }));
       return Pi;
     });
   }
