@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
+import { useServerFn } from "@tanstack/react-start";
 
 import { LanguageSwitcher, useT } from "@/lib/i18n";
 import { usePiAuth } from "@/lib/use-pi-auth";
 import { usePiPayment } from "@/lib/use-pi-payment";
+import { saveBooking } from "@/lib/bookings.functions";
 import heroImg from "@/assets/hero.jpg";
 import roomSavannah from "@/assets/room-savannah.jpg";
 import roomAcacia from "@/assets/room-acacia.jpg";
@@ -712,6 +714,10 @@ function Index() {
             <Link to="/terms" className="hover:text-white/60 transition-colors">
               Terms of Service
             </Link>
+            <span className="hidden sm:inline">·</span>
+            <Link to="/admin" className="hover:text-white/60 transition-colors">
+              Staff
+            </Link>
           </div>
         </div>
       </footer>
@@ -893,6 +899,7 @@ const FACILITIES = [
 
 function BookingForm() {
   const { pay: piPay, paying, error: piError } = usePiPayment();
+  const storeBooking = useServerFn(saveBooking);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState(""); // digits only, no +255
   const [checkIn, setCheckIn] = useState("");
@@ -939,7 +946,7 @@ function BookingForm() {
     const fullPhone = `+255${digits}`;
     const amount = total > 0 ? total : PI_PER_NIGHT;
     try {
-      await piPay({
+      const res = await piPay({
         amount,
         memo: `Kizazi Lodge — ${room} (${nights} night${nights > 1 ? "s" : ""})`,
         metadata: {
@@ -953,7 +960,29 @@ function BookingForm() {
           nights,
         },
       });
-      setConfirmation(makeCode());
+      const code = makeCode();
+      try {
+        await storeBooking({
+          data: {
+            confirmationCode: code,
+            guestName: trimmedName,
+            phone: fullPhone,
+            checkIn,
+            checkOut,
+            nights: nights > 0 ? nights : 1,
+            guests,
+            room,
+            pricePerNight: PI_PER_NIGHT,
+            totalPi: amount,
+            paymentId: res?.paymentId,
+            txid: res?.txid,
+            notes: notes.trim().slice(0, 500) || undefined,
+          },
+        });
+      } catch (err) {
+        console.error("Could not save booking", err);
+      }
+      setConfirmation(code);
     } catch {
       /* error surfaced via piError */
     }
