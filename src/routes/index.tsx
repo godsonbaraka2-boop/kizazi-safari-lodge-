@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
+import { useServerFn } from "@tanstack/react-start";
 
 import { LanguageSwitcher, useT } from "@/lib/i18n";
 import { usePiAuth } from "@/lib/use-pi-auth";
 import { usePiPayment } from "@/lib/use-pi-payment";
+import { saveBooking } from "@/lib/bookings.functions";
 import heroImg from "@/assets/hero.jpg";
 import roomSavannah from "@/assets/room-savannah.jpg";
 import roomAcacia from "@/assets/room-acacia.jpg";
@@ -893,6 +895,7 @@ const FACILITIES = [
 
 function BookingForm() {
   const { pay: piPay, paying, error: piError } = usePiPayment();
+  const storeBooking = useServerFn(saveBooking);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState(""); // digits only, no +255
   const [checkIn, setCheckIn] = useState("");
