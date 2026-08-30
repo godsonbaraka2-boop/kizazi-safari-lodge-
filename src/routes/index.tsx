@@ -939,7 +939,7 @@ function BookingForm() {
     const fullPhone = `+255${digits}`;
     const amount = total > 0 ? total : PI_PER_NIGHT;
     try {
-      await piPay({
+      const res = await piPay({
         amount,
         memo: `Kizazi Lodge — ${room} (${nights} night${nights > 1 ? "s" : ""})`,
         metadata: {
@@ -953,7 +953,29 @@ function BookingForm() {
           nights,
         },
       });
-      setConfirmation(makeCode());
+      const code = makeCode();
+      try {
+        await storeBooking({
+          data: {
+            confirmationCode: code,
+            guestName: trimmedName,
+            phone: fullPhone,
+            checkIn,
+            checkOut,
+            nights: nights > 0 ? nights : 1,
+            guests,
+            room,
+            pricePerNight: PI_PER_NIGHT,
+            totalPi: amount,
+            paymentId: res?.paymentId,
+            txid: res?.txid,
+            notes: notes.trim().slice(0, 500) || undefined,
+          },
+        });
+      } catch (err) {
+        console.error("Could not save booking", err);
+      }
+      setConfirmation(code);
     } catch {
       /* error surfaced via piError */
     }
