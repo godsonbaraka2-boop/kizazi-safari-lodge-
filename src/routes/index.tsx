@@ -714,6 +714,10 @@ function Index() {
             <Link to="/terms" className="hover:text-white/60 transition-colors">
               Terms of Service
             </Link>
+            <span className="hidden sm:inline">·</span>
+            <Link to="/admin" className="hover:text-white/60 transition-colors">
+              Staff
+            </Link>
           </div>
         </div>
       </footer>
