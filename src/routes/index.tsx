@@ -117,6 +117,7 @@ function Index() {
         memo: `Kizazi Lodge — ${tour.name}`,
         metadata: { kind: "tour_booking", tour: tour.name },
       });
+      await savePaymentRecord("tour", tour.name, tour.piAmount, res);
       window.open(
         wa(
           `Hello, I just paid ${tour.piAmount} π for the "${tour.name}" safari via Pi Network. Payment ID: ${res.paymentId}, txid: ${res.txid}. Please confirm my booking.`,
