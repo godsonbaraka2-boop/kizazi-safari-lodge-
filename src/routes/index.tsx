@@ -163,6 +163,7 @@ function Index() {
         memo: `Kizazi Lodge — ${room.name} (1 night)`,
         metadata: { kind: "room_booking", room: room.name },
       });
+      await savePaymentRecord("room", room.name, room.piAmount, res);
       window.open(
         wa(
           `Hello, I just paid ${room.piAmount} π for the ${room.name} via Pi Network. Payment ID: ${res.paymentId}, txid: ${res.txid}. Please confirm my booking.`,
