@@ -84,6 +84,30 @@ function Index() {
   const [payingRoom, setPayingRoom] = useState<string | null>(null);
   const [payingItem, setPayingItem] = useState<string | null>(null);
   const [payingTour, setPayingTour] = useState<string | null>(null);
+  const logPayment = useServerFn(recordPiPayment);
+
+  const savePaymentRecord = async (
+    kind: "room" | "food" | "tour",
+    itemName: string,
+    amountPi: number,
+    res: { paymentId?: string; txid?: string },
+  ) => {
+    try {
+      await logPayment({
+        data: {
+          kind,
+          itemName,
+          amountPi,
+          guestName: piUser ? `@${piUser.username}` : undefined,
+          paymentId: res?.paymentId,
+          txid: res?.txid,
+        },
+      });
+    } catch (err) {
+      console.error("Could not record payment", err);
+    }
+  };
+
 
   const handleTourPay = async (tour: { name: string; piAmount: number }) => {
     setPayingTour(tour.name);
