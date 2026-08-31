@@ -309,7 +309,25 @@ function Admin() {
                         <td className="px-3 py-3">{b.nights}</td>
                         <td className="px-3 py-3">{b.guests}</td>
                         <td className="px-3 py-3">{Number(b.total_pi).toFixed(6)}</td>
-                        <td className="px-3 py-3">{b.status}</td>
+                        <td className="px-3 py-3">
+                          <select
+                            value={b.status}
+                            disabled={savingId === b.id}
+                            onChange={(e) => void changeStatus(b.id, e.target.value)}
+                            className="bg-white/10 border border-white/20 rounded-lg px-2 py-1 text-xs text-white focus:outline-none disabled:opacity-50"
+                          >
+                            {STATUSES.map((s) => (
+                              <option className="bg-earth-900" key={s} value={s}>
+                                {s}
+                              </option>
+                            ))}
+                            {!STATUSES.includes(b.status as (typeof STATUSES)[number]) && (
+                              <option className="bg-earth-900" value={b.status}>
+                                {b.status}
+                              </option>
+                            )}
+                          </select>
+                        </td>
                         <td className="px-3 py-3 text-white/50">
                           {new Date(b.created_at).toLocaleString()}
                         </td>
