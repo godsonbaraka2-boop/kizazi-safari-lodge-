@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { LanguageSwitcher, useT } from "@/lib/i18n";
 import { usePiAuth } from "@/lib/use-pi-auth";
 import { usePiPayment } from "@/lib/use-pi-payment";
-import { saveBooking } from "@/lib/bookings.functions";
+import { saveBooking, recordPiPayment } from "@/lib/bookings.functions";
 import heroImg from "@/assets/hero.jpg";
 import roomSavannah from "@/assets/room-savannah.jpg";
 import roomAcacia from "@/assets/room-acacia.jpg";
