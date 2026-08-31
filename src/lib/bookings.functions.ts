@@ -65,3 +65,30 @@ export const listBookings = createServerFn({ method: "POST" })
     }
     return { ok: true as const, bookings: rows ?? [] };
   });
+
+export const updateBookingStatus = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        passcode: z.string().min(1).max(200),
+        id: z.string().uuid(),
+        status: z.enum(["paid", "checked-in", "cancelled"]),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const expected = process.env["ADMIN_PASSCODE"];
+    if (!expected || data.passcode !== expected) {
+      return { ok: false as const };
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("bookings")
+      .update({ status: data.status })
+      .eq("id", data.id);
+    if (error) {
+      console.error("updateBookingStatus failed", error.message);
+      return { ok: false as const };
+    }
+    return { ok: true as const };
+  });

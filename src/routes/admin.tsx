@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
-import { listBookings } from "@/lib/bookings.functions";
+import { useMemo, useState } from "react";
+import { listBookings, updateBookingStatus } from "@/lib/bookings.functions";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -44,12 +44,45 @@ type Booking = {
   created_at: string;
 };
 
+const STATUSES = ["paid", "checked-in", "cancelled"] as const;
+
+function toCsv(rows: Booking[]) {
+  const headers = [
+    "confirmation_code",
+    "guest_name",
+    "phone",
+    "room",
+    "check_in",
+    "check_out",
+    "nights",
+    "guests",
+    "price_per_night",
+    "total_pi",
+    "status",
+    "payment_id",
+    "txid",
+    "notes",
+    "created_at",
+  ] as const;
+  const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  return [
+    headers.join(","),
+    ...rows.map((r) => headers.map((h) => esc(r[h])).join(",")),
+  ].join("\n");
+}
+
 function Admin() {
   const fetchBookings = useServerFn(listBookings);
+  const setStatus = useServerFn(updateBookingStatus);
   const [passcode, setPasscode] = useState("");
   const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   const load = async (code: string) => {
     setLoading(true);
@@ -69,7 +102,50 @@ function Admin() {
     }
   };
 
-  const totalPi = (bookings ?? []).reduce((s, b) => s + Number(b.total_pi ?? 0), 0);
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return (bookings ?? []).filter((b) => {
+      if (
+        q &&
+        !`${b.confirmation_code} ${b.guest_name} ${b.phone} ${b.room}`.toLowerCase().includes(q)
+      )
+        return false;
+      if (statusFilter !== "all" && b.status !== statusFilter) return false;
+      if (fromDate && b.check_in < fromDate) return false;
+      if (toDate && b.check_in > toDate) return false;
+      return true;
+    });
+  }, [bookings, search, statusFilter, fromDate, toDate]);
+
+  const totalPi = filtered.reduce((s, b) => s + Number(b.total_pi ?? 0), 0);
+
+  const changeStatus = async (id: string, status: string) => {
+    setSavingId(id);
+    try {
+      const res = await setStatus({
+        data: { passcode: passcode.trim(), id, status: status as (typeof STATUSES)[number] },
+      });
+      if (res.ok) {
+        setBookings((prev) => (prev ?? []).map((b) => (b.id === id ? { ...b, status } : b)));
+      } else {
+        setError("Could not update status.");
+      }
+    } catch {
+      setError("Could not update status.");
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  const downloadCsv = () => {
+    const blob = new Blob([toCsv(filtered)], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `kizazi-bookings-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <main className="min-h-screen bg-earth-900 text-white px-4 py-12">
@@ -119,23 +195,79 @@ function Admin() {
             <div className="flex flex-wrap gap-4 text-sm">
               <div className="bg-white/5 border border-white/15 rounded-xl px-5 py-3">
                 <p className="text-white/50 text-[10px] uppercase tracking-widest">Bookings</p>
-                <p className="text-xl font-bold">{bookings.length}</p>
+                <p className="text-xl font-bold">
+                  {filtered.length}
+                  <span className="text-white/40 text-xs"> / {bookings.length}</span>
+                </p>
               </div>
               <div className="bg-white/5 border border-white/15 rounded-xl px-5 py-3">
                 <p className="text-white/50 text-[10px] uppercase tracking-widest">Total paid</p>
                 <p className="text-xl font-bold text-purple-300">{totalPi.toFixed(6)} π</p>
               </div>
-              <button
-                type="button"
-                onClick={() => void load(passcode.trim())}
-                className="ml-auto self-center text-xs uppercase tracking-widest border border-white/20 rounded-xl px-4 py-3 hover:bg-white/10"
-              >
-                {loading ? "Refreshing…" : "Refresh"}
-              </button>
+              <div className="ml-auto self-center flex gap-2">
+                <button
+                  type="button"
+                  onClick={downloadCsv}
+                  className="text-xs uppercase tracking-widest border border-white/20 rounded-xl px-4 py-3 hover:bg-white/10"
+                >
+                  Download CSV
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void load(passcode.trim())}
+                  className="text-xs uppercase tracking-widest border border-white/20 rounded-xl px-4 py-3 hover:bg-white/10"
+                >
+                  {loading ? "Refreshing…" : "Refresh"}
+                </button>
+              </div>
             </div>
 
-            {bookings.length === 0 ? (
-              <p className="text-white/60 text-sm">No bookings yet.</p>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search code, guest, phone, room"
+                className="bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-savannah"
+              />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-savannah"
+              >
+                <option className="bg-earth-900" value="all">
+                  All statuses
+                </option>
+                {STATUSES.map((s) => (
+                  <option className="bg-earth-900" key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+              <label className="flex items-center gap-2 bg-white/5 border border-white/15 rounded-xl px-4 py-2 text-xs text-white/60">
+                Check-in from
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  className="bg-transparent text-white text-sm flex-1 focus:outline-none"
+                />
+              </label>
+              <label className="flex items-center gap-2 bg-white/5 border border-white/15 rounded-xl px-4 py-2 text-xs text-white/60">
+                to
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                  className="bg-transparent text-white text-sm flex-1 focus:outline-none"
+                />
+              </label>
+            </div>
+
+            {error && <p className="text-red-300 text-xs">{error}</p>}
+
+
+            {filtered.length === 0 ? (
+              <p className="text-white/60 text-sm">No bookings match your filters.</p>
             ) : (
               <div className="overflow-x-auto border border-white/15 rounded-2xl">
                 <table className="w-full text-left text-xs">
@@ -155,7 +287,7 @@ function Admin() {
                     </tr>
                   </thead>
                   <tbody>
-                    {bookings.map((b) => (
+                    {filtered.map((b) => (
                       <tr key={b.id} className="border-t border-white/10">
                         <td className="px-3 py-3 font-mono text-purple-300">
                           {b.confirmation_code}
@@ -177,7 +309,25 @@ function Admin() {
                         <td className="px-3 py-3">{b.nights}</td>
                         <td className="px-3 py-3">{b.guests}</td>
                         <td className="px-3 py-3">{Number(b.total_pi).toFixed(6)}</td>
-                        <td className="px-3 py-3">{b.status}</td>
+                        <td className="px-3 py-3">
+                          <select
+                            value={b.status}
+                            disabled={savingId === b.id}
+                            onChange={(e) => void changeStatus(b.id, e.target.value)}
+                            className="bg-white/10 border border-white/20 rounded-lg px-2 py-1 text-xs text-white focus:outline-none disabled:opacity-50"
+                          >
+                            {STATUSES.map((s) => (
+                              <option className="bg-earth-900" key={s} value={s}>
+                                {s}
+                              </option>
+                            ))}
+                            {!STATUSES.includes(b.status as (typeof STATUSES)[number]) && (
+                              <option className="bg-earth-900" value={b.status}>
+                                {b.status}
+                              </option>
+                            )}
+                          </select>
+                        </td>
                         <td className="px-3 py-3 text-white/50">
                           {new Date(b.created_at).toLocaleString()}
                         </td>
