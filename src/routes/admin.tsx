@@ -102,7 +102,50 @@ function Admin() {
     }
   };
 
-  const totalPi = (bookings ?? []).reduce((s, b) => s + Number(b.total_pi ?? 0), 0);
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return (bookings ?? []).filter((b) => {
+      if (
+        q &&
+        !`${b.confirmation_code} ${b.guest_name} ${b.phone} ${b.room}`.toLowerCase().includes(q)
+      )
+        return false;
+      if (statusFilter !== "all" && b.status !== statusFilter) return false;
+      if (fromDate && b.check_in < fromDate) return false;
+      if (toDate && b.check_in > toDate) return false;
+      return true;
+    });
+  }, [bookings, search, statusFilter, fromDate, toDate]);
+
+  const totalPi = filtered.reduce((s, b) => s + Number(b.total_pi ?? 0), 0);
+
+  const changeStatus = async (id: string, status: string) => {
+    setSavingId(id);
+    try {
+      const res = await setStatus({
+        data: { passcode: passcode.trim(), id, status: status as (typeof STATUSES)[number] },
+      });
+      if (res.ok) {
+        setBookings((prev) => (prev ?? []).map((b) => (b.id === id ? { ...b, status } : b)));
+      } else {
+        setError("Could not update status.");
+      }
+    } catch {
+      setError("Could not update status.");
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  const downloadCsv = () => {
+    const blob = new Blob([toCsv(filtered)], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `kizazi-bookings-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <main className="min-h-screen bg-earth-900 text-white px-4 py-12">
