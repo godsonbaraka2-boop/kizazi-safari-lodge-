@@ -279,6 +279,30 @@ function Index() {
       </section>
 
       {/* Rooms */}
+      {/* Booking form — placed right after the lodge showcase, above the rooms */}
+      <section id="book" className="px-6 py-20 bg-earth-900 text-white scroll-mt-20">
+        <div className="max-w-xl mx-auto">
+          <span className="inline-block mb-3 px-2 py-1 bg-savannah text-white text-[10px] font-bold tracking-widest uppercase">
+            {t("book.badge")}
+          </span>
+          <h2 className="text-3xl md:text-4xl font-display italic mb-2">{t("book.title")}</h2>
+          <p className="text-white/60 text-sm mb-4">{t("book.subtitle")}</p>
+          <div className="mb-8 rounded-2xl border border-savannah/40 bg-savannah/10 px-5 py-4 text-sm text-white/80">
+            <p className="font-semibold text-white mb-1">How to book</p>
+            <p>
+              Browse our{" "}
+              <a href="#rooms" className="underline text-savannah">
+                rooms below
+              </a>{" "}
+              first, then come back here and complete this form to confirm your stay. Your booking
+              is only reserved once the form is submitted and paid with Pi.
+            </p>
+          </div>
+
+          <BookingForm />
+        </div>
+      </section>
+
       <section id="rooms" className="px-6 py-20 bg-white scroll-mt-20">
         <div className="mb-10 max-w-3xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-display italic mb-2">{t("rooms.title")}</h2>
