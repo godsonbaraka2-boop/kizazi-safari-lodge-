@@ -204,14 +204,67 @@ function Admin() {
                 <p className="text-white/50 text-[10px] uppercase tracking-widest">Total paid</p>
                 <p className="text-xl font-bold text-purple-300">{totalPi.toFixed(6)} π</p>
               </div>
-              <button
-                type="button"
-                onClick={() => void load(passcode.trim())}
-                className="ml-auto self-center text-xs uppercase tracking-widest border border-white/20 rounded-xl px-4 py-3 hover:bg-white/10"
-              >
-                {loading ? "Refreshing…" : "Refresh"}
-              </button>
+              <div className="ml-auto self-center flex gap-2">
+                <button
+                  type="button"
+                  onClick={downloadCsv}
+                  className="text-xs uppercase tracking-widest border border-white/20 rounded-xl px-4 py-3 hover:bg-white/10"
+                >
+                  Download CSV
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void load(passcode.trim())}
+                  className="text-xs uppercase tracking-widest border border-white/20 rounded-xl px-4 py-3 hover:bg-white/10"
+                >
+                  {loading ? "Refreshing…" : "Refresh"}
+                </button>
+              </div>
             </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search code, guest, phone, room"
+                className="bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-savannah"
+              />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-savannah"
+              >
+                <option className="bg-earth-900" value="all">
+                  All statuses
+                </option>
+                {STATUSES.map((s) => (
+                  <option className="bg-earth-900" key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+              <label className="flex items-center gap-2 bg-white/5 border border-white/15 rounded-xl px-4 py-2 text-xs text-white/60">
+                Check-in from
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  className="bg-transparent text-white text-sm flex-1 focus:outline-none"
+                />
+              </label>
+              <label className="flex items-center gap-2 bg-white/5 border border-white/15 rounded-xl px-4 py-2 text-xs text-white/60">
+                to
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                  className="bg-transparent text-white text-sm flex-1 focus:outline-none"
+                />
+              </label>
+            </div>
+
+            {error && <p className="text-red-300 text-xs">{error}</p>}
+
 
             {bookings.length === 0 ? (
               <p className="text-white/60 text-sm">No bookings yet.</p>
