@@ -195,7 +195,10 @@ function Admin() {
             <div className="flex flex-wrap gap-4 text-sm">
               <div className="bg-white/5 border border-white/15 rounded-xl px-5 py-3">
                 <p className="text-white/50 text-[10px] uppercase tracking-widest">Bookings</p>
-                <p className="text-xl font-bold">{bookings.length}</p>
+                <p className="text-xl font-bold">
+                  {filtered.length}
+                  <span className="text-white/40 text-xs"> / {bookings.length}</span>
+                </p>
               </div>
               <div className="bg-white/5 border border-white/15 rounded-xl px-5 py-3">
                 <p className="text-white/50 text-[10px] uppercase tracking-widest">Total paid</p>
