@@ -44,6 +44,47 @@ export const saveBooking = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+const paymentSchema = z.object({
+  kind: z.enum(["room", "food", "tour"]),
+  itemName: z.string().min(1).max(120),
+  amountPi: z.number().min(0).max(1000000),
+  guestName: z.string().max(80).optional(),
+  paymentId: z.string().max(200).optional(),
+  txid: z.string().max(200).optional(),
+});
+
+/** Records a one-off Pi payment (room quick pay, food order, tour) in the bookings log. */
+export const recordPiPayment = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => paymentSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let suffix = "";
+    for (let i = 0; i < 4; i++) suffix += chars[Math.floor(Math.random() * chars.length)];
+    const today = new Date().toISOString().slice(0, 10);
+    const { error } = await supabaseAdmin.from("bookings").insert({
+      confirmation_code: `KIZ-${suffix}`,
+      guest_name: data.guestName?.trim() || "Pi guest",
+      phone: "—",
+      check_in: today,
+      check_out: today,
+      nights: 0,
+      guests: 1,
+      room: data.itemName,
+      price_per_night: data.amountPi,
+      total_pi: data.amountPi,
+      payment_id: data.paymentId ?? null,
+      txid: data.txid ?? null,
+      notes: `${data.kind} payment`,
+      status: "paid",
+    });
+    if (error) {
+      console.error("recordPiPayment failed", error.message);
+      return { ok: false as const };
+    }
+    return { ok: true as const };
+  });
+
 export const listBookings = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ passcode: z.string().min(1).max(200) }).parse(input))
   .handler(async ({ data }) => {
