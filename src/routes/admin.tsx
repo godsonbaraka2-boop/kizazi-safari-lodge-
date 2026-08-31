@@ -266,8 +266,8 @@ function Admin() {
             {error && <p className="text-red-300 text-xs">{error}</p>}
 
 
-            {bookings.length === 0 ? (
-              <p className="text-white/60 text-sm">No bookings yet.</p>
+            {filtered.length === 0 ? (
+              <p className="text-white/60 text-sm">No bookings match your filters.</p>
             ) : (
               <div className="overflow-x-auto border border-white/15 rounded-2xl">
                 <table className="w-full text-left text-xs">
