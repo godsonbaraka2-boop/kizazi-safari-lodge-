@@ -287,7 +287,7 @@ function Admin() {
                     </tr>
                   </thead>
                   <tbody>
-                    {bookings.map((b) => (
+                    {filtered.map((b) => (
                       <tr key={b.id} className="border-t border-white/10">
                         <td className="px-3 py-3 font-mono text-purple-300">
                           {b.confirmation_code}
