@@ -44,12 +44,45 @@ type Booking = {
   created_at: string;
 };
 
+const STATUSES = ["paid", "checked-in", "cancelled"] as const;
+
+function toCsv(rows: Booking[]) {
+  const headers = [
+    "confirmation_code",
+    "guest_name",
+    "phone",
+    "room",
+    "check_in",
+    "check_out",
+    "nights",
+    "guests",
+    "price_per_night",
+    "total_pi",
+    "status",
+    "payment_id",
+    "txid",
+    "notes",
+    "created_at",
+  ] as const;
+  const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  return [
+    headers.join(","),
+    ...rows.map((r) => headers.map((h) => esc(r[h])).join(",")),
+  ].join("\n");
+}
+
 function Admin() {
   const fetchBookings = useServerFn(listBookings);
+  const setStatus = useServerFn(updateBookingStatus);
   const [passcode, setPasscode] = useState("");
   const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   const load = async (code: string) => {
     setLoading(true);
