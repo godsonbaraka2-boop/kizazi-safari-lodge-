@@ -287,6 +287,41 @@ function Admin() {
 
             {error && <p className="text-red-300 text-xs">{error}</p>}
 
+            <section className="bg-white/5 border border-white/15 rounded-2xl p-6 space-y-3">
+              <div className="space-y-1">
+                <p className="text-[10px] uppercase tracking-[0.3em] text-savannah">
+                  Pi Testnet token
+                </p>
+                <h2 className="text-lg font-display italic">Kizazi Safari Token (KST)</h2>
+                <p className="text-white/60 text-xs max-w-xl">
+                  Creates the trustline from the distributor wallet to the issuer, then mints
+                  1,000,000,000 KST into circulation on the Pi Testnet. Wallet keys stay on the
+                  backend.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => void handleMint()}
+                disabled={minting}
+                className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors"
+              >
+                {minting && (
+                  <span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                )}
+                {minting ? "Minting…" : "Mint Kizazi Token Now"}
+              </button>
+              {mintTxId && (
+                <div className="text-xs space-y-1">
+                  <p className="text-green-300 font-bold">Success! Token minted.</p>
+                  <p className="text-white/70">
+                    Transaction ID: <span className="font-mono break-all">{mintTxId}</span>
+                  </p>
+                </div>
+              )}
+              {mintError && <p className="text-red-300 text-xs">{mintError}</p>}
+            </section>
+
+
 
             {filtered.length === 0 ? (
               <p className="text-white/60 text-sm">No bookings match your filters.</p>
