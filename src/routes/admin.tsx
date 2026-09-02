@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { listBookings, updateBookingStatus } from "@/lib/bookings.functions";
+import { mintKizaziToken } from "@/lib/token.functions";
+
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -74,6 +76,7 @@ function toCsv(rows: Booking[]) {
 function Admin() {
   const fetchBookings = useServerFn(listBookings);
   const setStatus = useServerFn(updateBookingStatus);
+  const mintToken = useServerFn(mintKizaziToken);
   const [passcode, setPasscode] = useState("");
   const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -83,6 +86,25 @@ function Admin() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [minting, setMinting] = useState(false);
+  const [mintTxId, setMintTxId] = useState<string | null>(null);
+  const [mintError, setMintError] = useState<string | null>(null);
+
+  const handleMint = async () => {
+    setMinting(true);
+    setMintError(null);
+    setMintTxId(null);
+    try {
+      const res = await mintToken({ data: { passcode: passcode.trim() } });
+      if (res.ok) setMintTxId(res.txId);
+      else setMintError(res.error ?? "Minting failed.");
+    } catch {
+      setMintError("Minting failed. Please try again.");
+    } finally {
+      setMinting(false);
+    }
+  };
+
 
   const load = async (code: string) => {
     setLoading(true);
@@ -264,6 +286,41 @@ function Admin() {
             </div>
 
             {error && <p className="text-red-300 text-xs">{error}</p>}
+
+            <section className="bg-white/5 border border-white/15 rounded-2xl p-6 space-y-3">
+              <div className="space-y-1">
+                <p className="text-[10px] uppercase tracking-[0.3em] text-savannah">
+                  Pi Testnet token
+                </p>
+                <h2 className="text-lg font-display italic">Kizazi Safari Token (KST)</h2>
+                <p className="text-white/60 text-xs max-w-xl">
+                  Creates the trustline from the distributor wallet to the issuer, then mints
+                  1,000,000,000 KST into circulation on the Pi Testnet. Wallet keys stay on the
+                  backend.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => void handleMint()}
+                disabled={minting}
+                className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors"
+              >
+                {minting && (
+                  <span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                )}
+                {minting ? "Minting…" : "Mint Kizazi Token Now"}
+              </button>
+              {mintTxId && (
+                <div className="text-xs space-y-1">
+                  <p className="text-green-300 font-bold">Success! Token minted.</p>
+                  <p className="text-white/70">
+                    Transaction ID: <span className="font-mono break-all">{mintTxId}</span>
+                  </p>
+                </div>
+              )}
+              {mintError && <p className="text-red-300 text-xs">{mintError}</p>}
+            </section>
+
 
 
             {filtered.length === 0 ? (
