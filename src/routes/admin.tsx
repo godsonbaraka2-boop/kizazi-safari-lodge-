@@ -76,6 +76,7 @@ function toCsv(rows: Booking[]) {
 function Admin() {
   const fetchBookings = useServerFn(listBookings);
   const setStatus = useServerFn(updateBookingStatus);
+  const mintToken = useServerFn(mintKizaziToken);
   const [passcode, setPasscode] = useState("");
   const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -85,6 +86,25 @@ function Admin() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [minting, setMinting] = useState(false);
+  const [mintTxId, setMintTxId] = useState<string | null>(null);
+  const [mintError, setMintError] = useState<string | null>(null);
+
+  const handleMint = async () => {
+    setMinting(true);
+    setMintError(null);
+    setMintTxId(null);
+    try {
+      const res = await mintToken({ data: { passcode: passcode.trim() } });
+      if (res.ok) setMintTxId(res.txId);
+      else setMintError(res.error ?? "Minting failed.");
+    } catch {
+      setMintError("Minting failed. Please try again.");
+    } finally {
+      setMinting(false);
+    }
+  };
+
 
   const load = async (code: string) => {
     setLoading(true);
