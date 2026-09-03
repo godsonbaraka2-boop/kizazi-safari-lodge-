@@ -167,6 +167,7 @@ function Admin() {
         setBookings(null);
       } else {
         setBookings(res.bookings as Booking[]);
+        void refreshKeyStatus(code);
       }
     } catch {
       setError("Could not load bookings. Please try again.");
