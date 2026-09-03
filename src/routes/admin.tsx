@@ -2,7 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { listBookings, updateBookingStatus } from "@/lib/bookings.functions";
-import { mintKizaziToken } from "@/lib/token.functions";
+import {
+  getWalletSecretStatus,
+  mintKizaziToken,
+  saveWalletSecrets,
+} from "@/lib/token.functions";
 
 
 export const Route = createFileRoute("/admin")({
