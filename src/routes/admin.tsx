@@ -95,6 +95,51 @@ function Admin() {
   const [minting, setMinting] = useState(false);
   const [mintTxId, setMintTxId] = useState<string | null>(null);
   const [mintError, setMintError] = useState<string | null>(null);
+  const [issuerKey, setIssuerKey] = useState("");
+  const [distributorKey, setDistributorKey] = useState("");
+  const [keysSaved, setKeysSaved] = useState(false);
+  const [savingKeys, setSavingKeys] = useState(false);
+  const [keysError, setKeysError] = useState<string | null>(null);
+  const [keysMessage, setKeysMessage] = useState<string | null>(null);
+
+  const refreshKeyStatus = async (code: string) => {
+    try {
+      const res = await checkKeys({ data: { passcode: code } });
+      setKeysSaved(Boolean(res.ok && res.issuer && res.distributor));
+    } catch {
+      setKeysSaved(false);
+    }
+  };
+
+  const handleSaveKeys = async () => {
+    setSavingKeys(true);
+    setKeysError(null);
+    setKeysMessage(null);
+    const issuer = issuerKey.trim();
+    const distributor = distributorKey.trim();
+    if (!/^S[A-Z2-7]{55}$/.test(issuer) || !/^S[A-Z2-7]{55}$/.test(distributor)) {
+      setKeysError("Both keys must start with S and be 56 characters long.");
+      setSavingKeys(false);
+      return;
+    }
+    try {
+      const res = await saveKeys({
+        data: { passcode: passcode.trim(), issuerSecret: issuer, distributorSecret: distributor },
+      });
+      if (res.ok) {
+        setKeysSaved(true);
+        setIssuerKey("");
+        setDistributorKey("");
+        setKeysMessage("Both wallet keys are saved securely on the backend.");
+      } else {
+        setKeysError(res.error ?? "Could not save the keys.");
+      }
+    } catch {
+      setKeysError("Could not save the keys. Please try again.");
+    } finally {
+      setSavingKeys(false);
+    }
+  };
 
   const handleMint = async () => {
     setMinting(true);
