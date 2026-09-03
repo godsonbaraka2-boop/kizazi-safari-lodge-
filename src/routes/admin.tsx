@@ -346,15 +346,80 @@ function Admin() {
                 </p>
                 <h2 className="text-lg font-display italic">Kizazi Safari Token (KST)</h2>
                 <p className="text-white/60 text-xs max-w-xl">
-                  Creates the trustline from the distributor wallet to the issuer, then mints
-                  1,000,000,000 KST into circulation on the Pi Testnet. Wallet keys stay on the
-                  backend.
+                  Minting runs in three steps: first the distributor wallet is funded with at least
+                  2 XLM on Pi Testnet, then the trustline to the issuer is created, then
+                  1,000,000,000 KST is minted to the distributor. Wallet keys stay on the backend.
                 </p>
               </div>
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void handleSaveKeys();
+                }}
+                className="grid gap-3 sm:grid-cols-2 border-t border-white/10 pt-4"
+              >
+                <div className="space-y-1">
+                  <label
+                    htmlFor="issuer-secret"
+                    className="block text-[10px] font-bold uppercase tracking-widest text-white/60"
+                  >
+                    PI_ISSUER_SECRET
+                  </label>
+                  <input
+                    id="issuer-secret"
+                    type="password"
+                    value={issuerKey}
+                    onChange={(e) => setIssuerKey(e.target.value)}
+                    autoComplete="off"
+                    spellCheck={false}
+                    placeholder="S…"
+                    className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-sm text-white font-mono placeholder:text-white/30 focus:outline-none focus:border-savannah"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label
+                    htmlFor="distributor-secret"
+                    className="block text-[10px] font-bold uppercase tracking-widest text-white/60"
+                  >
+                    PI_DISTRIBUTOR_SECRET
+                  </label>
+                  <input
+                    id="distributor-secret"
+                    type="password"
+                    value={distributorKey}
+                    onChange={(e) => setDistributorKey(e.target.value)}
+                    autoComplete="off"
+                    spellCheck={false}
+                    placeholder="S…"
+                    className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-sm text-white font-mono placeholder:text-white/30 focus:outline-none focus:border-savannah"
+                  />
+                </div>
+                <div className="sm:col-span-2 flex flex-wrap items-center gap-3">
+                  <button
+                    type="submit"
+                    disabled={savingKeys}
+                    className="inline-flex items-center gap-2 border border-white/20 hover:bg-white/10 disabled:opacity-60 text-white px-5 py-3 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors"
+                  >
+                    {savingKeys ? "Saving…" : "Save keys securely"}
+                  </button>
+                  <span
+                    className={`text-xs ${keysSaved ? "text-green-300" : "text-white/50"}`}
+                  >
+                    {keysSaved ? "Both keys configured ✓" : "Keys not configured yet"}
+                  </span>
+                </div>
+                {keysError && <p className="sm:col-span-2 text-red-300 text-xs">{keysError}</p>}
+                {keysMessage && (
+                  <p className="sm:col-span-2 text-green-300 text-xs">{keysMessage}</p>
+                )}
+              </form>
+
               <button
                 type="button"
                 onClick={() => void handleMint()}
-                disabled={minting}
+                disabled={minting || !keysSaved}
+                title={keysSaved ? undefined : "Save both wallet keys first"}
                 className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors"
               >
                 {minting && (
