@@ -81,6 +81,8 @@ function Admin() {
   const fetchBookings = useServerFn(listBookings);
   const setStatus = useServerFn(updateBookingStatus);
   const mintToken = useServerFn(mintKizaziToken);
+  const saveKeys = useServerFn(saveWalletSecrets);
+  const checkKeys = useServerFn(getWalletSecretStatus);
   const [passcode, setPasscode] = useState("");
   const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [loading, setLoading] = useState(false);
