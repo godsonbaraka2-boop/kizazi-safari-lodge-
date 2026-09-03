@@ -124,38 +124,99 @@ export const getWalletSecretStatus = createServerFn({ method: "POST" })
     return { ok: true as const, issuer: Boolean(issuer), distributor: Boolean(distributor) };
   });
 
-async function nativeBalance(publicKey: string) {
-  const account = (await horizonGet(`/accounts/${publicKey}`)) as {
-    balances?: Array<{ asset_type?: string; balance?: string }>;
-  };
-  const native = (account.balances ?? []).find((b) => b.asset_type === "native");
-  return Number(native?.balance ?? 0);
-}
-
-/** Step 1: make sure the distributor wallet holds at least 2 XLM on Pi Testnet. */
-async function fundDistributor(publicKey: string) {
-  let balance = 0;
+async function accountInfo(publicKey: string) {
   try {
-    balance = await nativeBalance(publicKey);
+    const account = (await horizonGet(`/accounts/${publicKey}`)) as {
+      balances?: Array<{ asset_type?: string; balance?: string; asset_code?: string; asset_issuer?: string }>;
+    };
+    const balances = account.balances ?? [];
+    const native = balances.find((b) => b.asset_type === "native");
+    return { exists: true, balance: Number(native?.balance ?? 0), balances };
   } catch {
-    balance = 0; // account may not exist yet
+    return { exists: false, balance: 0, balances: [] as Array<Record<string, unknown>> };
   }
-  if (balance >= MIN_NATIVE_BALANCE) return { funded: true, balance, viaFaucet: false };
-
-  const res = await fetch(`${HORIZON}/friendbot?addr=${publicKey}`);
-  if (!res.ok) {
-    throw new Error(
-      `Distributor wallet has only ${balance} XLM. Fund it with at least ${MIN_NATIVE_BALANCE} test-Pi (XLM) in the Pi Testnet wallet, then mint again.`,
-    );
-  }
-  const newBalance = await nativeBalance(publicKey);
-  if (newBalance < MIN_NATIVE_BALANCE) {
-    throw new Error(
-      `Funding did not reach ${MIN_NATIVE_BALANCE} XLM (current: ${newBalance}). Top up the distributor wallet and try again.`,
-    );
-  }
-  return { funded: true, balance: newBalance, viaFaucet: true };
 }
+
+async function nativeBalance(publicKey: string) {
+  return (await accountInfo(publicKey)).balance;
+}
+
+/**
+ * Shows the admin the two wallet addresses plus their Test-Pi balances so the
+ * wallets can be funded manually. Pi Testnet has no friendbot/faucet endpoint,
+ * so test-Pi must come from the Pi Testnet wallet (wallet.testnet.minepi.com).
+ */
+export const getWalletFunding = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => z.object({ passcode: z.string().min(1).max(200) }).parse(input))
+  .handler(async ({ data }) => {
+    if (!checkPasscode(data.passcode)) {
+      return { ok: false as const, error: "Wrong admin passcode." };
+    }
+    const [issuerSecret, distributorSecret] = await Promise.all([
+      readWalletSecret("PI_ISSUER_SECRET"),
+      readWalletSecret("PI_DISTRIBUTOR_SECRET"),
+    ]);
+    if (!issuerSecret || !distributorSecret) {
+      return { ok: false as const, error: "Save both wallet secret keys first." };
+    }
+    const { Keypair } = await import("@stellar/stellar-base");
+    let issuerPub: string;
+    let distributorPub: string;
+    try {
+      issuerPub = Keypair.fromSecret(issuerSecret).publicKey();
+      distributorPub = Keypair.fromSecret(distributorSecret).publicKey();
+    } catch {
+      return { ok: false as const, error: "Stored wallet keys are not valid Pi wallet keys." };
+    }
+    const [issuer, distributor] = await Promise.all([
+      accountInfo(issuerPub),
+      accountInfo(distributorPub),
+    ]);
+    const hasTrustline = (distributor.balances as Array<{ asset_code?: string; asset_issuer?: string }>).some(
+      (b) => b.asset_code === ASSET_CODE && b.asset_issuer === issuerPub,
+    );
+    const kst = (distributor.balances as Array<{ asset_code?: string; balance?: string }>).find(
+      (b) => b.asset_code === ASSET_CODE,
+    );
+    return {
+      ok: true as const,
+      required: MIN_NATIVE_BALANCE,
+      issuer: { publicKey: issuerPub, exists: issuer.exists, balance: issuer.balance },
+      distributor: {
+        publicKey: distributorPub,
+        exists: distributor.exists,
+        balance: distributor.balance,
+      },
+      hasTrustline,
+      kstBalance: kst?.balance ?? "0",
+      ready: issuer.exists && distributor.exists && distributor.balance >= MIN_NATIVE_BALANCE,
+    };
+  });
+
+/** Step 1: make sure both wallets exist and the distributor holds enough test-Pi. */
+async function fundDistributor(distributorPublicKey: string, issuerPublicKey: string) {
+  const [issuer, distributor] = await Promise.all([
+    accountInfo(issuerPublicKey),
+    accountInfo(distributorPublicKey),
+  ]);
+  if (!issuer.exists) {
+    throw new Error(
+      `Issuer wallet (${issuerPublicKey}) is not activated on Pi Testnet yet. Send at least 2 test-Pi to it from your Pi Testnet wallet, then mint again.`,
+    );
+  }
+  if (!distributor.exists) {
+    throw new Error(
+      `Distributor wallet (${distributorPublicKey}) has no test-Pi at all, so it does not exist on Pi Testnet yet. Open the Pi Testnet wallet in Pi Browser and send at least ${MIN_NATIVE_BALANCE} test-Pi to this address, then mint again.`,
+    );
+  }
+  if (distributor.balance < MIN_NATIVE_BALANCE) {
+    throw new Error(
+      `Distributor wallet holds only ${distributor.balance} test-Pi. Send at least ${MIN_NATIVE_BALANCE} test-Pi to ${distributorPublicKey}, then mint again. (Pi Testnet has no faucet endpoint, so funding must come from your Pi Testnet wallet.)`,
+    );
+  }
+  return { funded: true, balance: distributor.balance, viaFaucet: false };
+}
+
 
 export const mintKizaziToken = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
