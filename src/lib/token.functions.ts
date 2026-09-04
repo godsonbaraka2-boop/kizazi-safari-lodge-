@@ -199,19 +199,19 @@ async function fundDistributor(distributorPublicKey: string, issuerPublicKey: st
     accountInfo(issuerPublicKey),
     accountInfo(distributorPublicKey),
   ]);
-  if (!issuer.exists) {
+  if (!issuer.exists || issuer.balance <= 0) {
     throw new Error(
-      `Issuer wallet (${issuerPublicKey}) is not activated on Pi Testnet yet. Send at least 2 test-Pi to it from your Pi Testnet wallet, then mint again.`,
+      `STEP 1 - FUND ISSUER: Issuer wallet (${issuerPublicKey}) is not activated on Pi Testnet yet. Send at least 1 test-Pi (XLM) to this address from your Pi Testnet wallet, then mint again.`,
     );
   }
-  if (!distributor.exists) {
+  if (!distributor.exists || distributor.balance <= 0) {
     throw new Error(
-      `Distributor wallet (${distributorPublicKey}) has no test-Pi at all, so it does not exist on Pi Testnet yet. Open the Pi Testnet wallet in Pi Browser and send at least ${MIN_NATIVE_BALANCE} test-Pi to this address, then mint again.`,
+      `STEP 2 - FUND DISTRIBUTOR: Distributor wallet (${distributorPublicKey}) has no test-Pi at all, so it does not exist on Pi Testnet yet. Open the Pi Testnet wallet in Pi Browser and send at least ${MIN_NATIVE_BALANCE} test-Pi to this address, then mint again.`,
     );
   }
   if (distributor.balance < MIN_NATIVE_BALANCE) {
     throw new Error(
-      `Distributor wallet holds only ${distributor.balance} test-Pi. Send at least ${MIN_NATIVE_BALANCE} test-Pi to ${distributorPublicKey}, then mint again. (Pi Testnet has no faucet endpoint, so funding must come from your Pi Testnet wallet.)`,
+      `STEP 2 - TOP UP DISTRIBUTOR: Distributor wallet holds only ${distributor.balance} test-Pi. Send at least ${MIN_NATIVE_BALANCE} test-Pi to ${distributorPublicKey}, then mint again. (Pi Testnet has no faucet endpoint, so funding must come from your Pi Testnet wallet.)`,
     );
   }
   return { funded: true, balance: distributor.balance, viaFaucet: false };
