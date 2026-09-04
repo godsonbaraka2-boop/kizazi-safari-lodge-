@@ -117,8 +117,35 @@ function Admin() {
   >(null);
   const [fundingLoading, setFundingLoading] = useState(false);
   const [fundingError, setFundingError] = useState<string | null>(null);
+  const activate = useServerFn(activateWallets);
+  const [fundingSecret, setFundingSecret] = useState("");
+  const [activating, setActivating] = useState(false);
+  const [activateError, setActivateError] = useState<string | null>(null);
+  const [activateMessage, setActivateMessage] = useState<string | null>(null);
 
-  const refreshKeyStatus = async (code: string) => {
+  const handleActivate = async () => {
+    setActivating(true);
+    setActivateError(null);
+    setActivateMessage(null);
+    try {
+      const res = await activate({
+        data: { passcode: passcode.trim(), fundingSecret: fundingSecret.trim() },
+      });
+      if (res.ok) {
+        setActivateMessage(res.message);
+        setFundingSecret("");
+        await handleCheckFunding();
+      } else {
+        setActivateError(res.error ?? "Could not activate the wallets.");
+      }
+    } catch {
+      setActivateError("Could not activate the wallets. Please try again.");
+    } finally {
+      setActivating(false);
+    }
+  };
+
+
     try {
       const res = await checkKeys({ data: { passcode: code } });
       setKeysSaved(Boolean(res.ok && res.issuer && res.distributor));
