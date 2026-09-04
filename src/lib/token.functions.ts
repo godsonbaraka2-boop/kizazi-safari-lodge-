@@ -71,6 +71,40 @@ const secretKeySchema = z
   .trim()
   .regex(/^S[A-Z2-7]{55}$/, "Secret key must start with S and be 56 characters.");
 
+/**
+ * Pi Testnet wallets are created inside Pi Browser from a 24-word passphrase and
+ * never show a raw "S…" secret key. This derives the wallet keypair from that
+ * passphrase using the Pi/Stellar SEP-0005 path m/44'/314159'/0'.
+ */
+async function keypairFromSecretOrPassphrase(input: string) {
+  const { Keypair } = await import("@stellar/stellar-base");
+  const value = input.trim().replace(/\s+/g, " ");
+
+  if (/^S[A-Z2-7]{55}$/.test(value)) return Keypair.fromSecret(value);
+
+  const words = value.toLowerCase().split(" ");
+  if (words.length !== 12 && words.length !== 24) {
+    throw new Error(
+      "Enter either an S… secret key or your 24-word Pi Testnet wallet passphrase.",
+    );
+  }
+  const bip39 = await import("bip39");
+  if (!bip39.validateMnemonic(words.join(" "))) {
+    throw new Error("That passphrase is not valid. Check the spelling and word order.");
+  }
+  const seed = await bip39.mnemonicToSeed(words.join(" "));
+  const { derivePath } = await import("ed25519-hd-key");
+  const { key } = derivePath("m/44'/314159'/0'", seed.toString("hex"));
+  return Keypair.fromRawEd25519Seed(key);
+}
+
+const fundingCredentialSchema = z
+  .string()
+  .trim()
+  .min(1, "Enter your secret key or 24-word passphrase.")
+  .max(1000);
+
+
 /** Stores the two Testnet wallet secret keys on the backend. */
 export const saveWalletSecrets = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
