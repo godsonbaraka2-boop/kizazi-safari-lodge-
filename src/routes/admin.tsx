@@ -144,8 +144,7 @@ function Admin() {
       setActivating(false);
     }
   };
-
-
+  const refreshKeyStatus = async (code: string) => {
     try {
       const res = await checkKeys({ data: { passcode: code } });
       setKeysSaved(Boolean(res.ok && res.issuer && res.distributor));
