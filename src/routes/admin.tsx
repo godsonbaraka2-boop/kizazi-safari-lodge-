@@ -102,6 +102,20 @@ function Admin() {
   const [savingKeys, setSavingKeys] = useState(false);
   const [keysError, setKeysError] = useState<string | null>(null);
   const [keysMessage, setKeysMessage] = useState<string | null>(null);
+  const checkFunding = useServerFn(getWalletFunding);
+  const [funding, setFunding] = useState<
+    | {
+        required: number;
+        issuer: { publicKey: string; exists: boolean; balance: number };
+        distributor: { publicKey: string; exists: boolean; balance: number };
+        hasTrustline: boolean;
+        kstBalance: string;
+        ready: boolean;
+      }
+    | null
+  >(null);
+  const [fundingLoading, setFundingLoading] = useState(false);
+  const [fundingError, setFundingError] = useState<string | null>(null);
 
   const refreshKeyStatus = async (code: string) => {
     try {
