@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { listBookings, updateBookingStatus } from "@/lib/bookings.functions";
 import {
+  getWalletFunding,
   getWalletSecretStatus,
   mintKizaziToken,
   saveWalletSecrets,
