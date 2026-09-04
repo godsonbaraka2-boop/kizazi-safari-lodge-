@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { listBookings, updateBookingStatus } from "@/lib/bookings.functions";
 import {
+  activateWallets,
   getWalletFunding,
   getWalletSecretStatus,
   mintKizaziToken,
@@ -116,7 +117,33 @@ function Admin() {
   >(null);
   const [fundingLoading, setFundingLoading] = useState(false);
   const [fundingError, setFundingError] = useState<string | null>(null);
+  const activate = useServerFn(activateWallets);
+  const [fundingSecret, setFundingSecret] = useState("");
+  const [activating, setActivating] = useState(false);
+  const [activateError, setActivateError] = useState<string | null>(null);
+  const [activateMessage, setActivateMessage] = useState<string | null>(null);
 
+  const handleActivate = async () => {
+    setActivating(true);
+    setActivateError(null);
+    setActivateMessage(null);
+    try {
+      const res = await activate({
+        data: { passcode: passcode.trim(), fundingSecret: fundingSecret.trim() },
+      });
+      if (res.ok) {
+        setActivateMessage(res.message);
+        setFundingSecret("");
+        await handleCheckFunding();
+      } else {
+        setActivateError(res.error ?? "Could not activate the wallets.");
+      }
+    } catch {
+      setActivateError("Could not activate the wallets. Please try again.");
+    } finally {
+      setActivating(false);
+    }
+  };
   const refreshKeyStatus = async (code: string) => {
     try {
       const res = await checkKeys({ data: { passcode: code } });
@@ -529,6 +556,43 @@ function Admin() {
                   </div>
                 )}
               </div>
+
+              <div className="border-t border-white/10 pt-4 space-y-3">
+                <p className="text-[10px] uppercase tracking-widest text-white/50">
+                  Activate wallets on Pi Testnet
+                </p>
+                <p className="text-xs text-white/70 leading-relaxed">
+                  If your Pi Testnet wallet says{" "}
+                  <span className="text-red-300">"The recipient's address does not exist"</span>, it is
+                  because a brand-new Testnet address must first be <em>created</em> on-chain — the
+                  wallet app cannot do that. Paste the secret key of the Pi Testnet wallet that already
+                  holds test-Pi and we will create and fund both wallets for you. The key is used once
+                  for this transaction and is never stored.
+                </p>
+                <input
+                  type="password"
+                  autoComplete="off"
+                  value={fundingSecret}
+                  onChange={(e) => setFundingSecret(e.target.value)}
+                  placeholder="S… secret key of your funded Pi Testnet wallet"
+                  className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-sm font-mono outline-none focus:border-savannah"
+                />
+                <button
+                  type="button"
+                  onClick={() => void handleActivate()}
+                  disabled={activating || !keysSaved || !/^S[A-Z2-7]{55}$/.test(fundingSecret.trim())}
+                  className="inline-flex items-center gap-2 border border-savannah/60 bg-savannah/15 hover:bg-savannah/25 disabled:opacity-60 text-white px-5 py-3 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors"
+                >
+                  {activating && (
+                    <span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                  )}
+                  {activating ? "Activating…" : "Create & fund wallets"}
+                </button>
+                {activateError && <p className="text-red-300 text-xs">{activateError}</p>}
+                {activateMessage && <p className="text-green-300 text-xs">{activateMessage}</p>}
+              </div>
+
+
 
               <button
                 type="button"
