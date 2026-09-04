@@ -171,6 +171,29 @@ function Admin() {
     }
   };
 
+  const handleCheckFunding = async () => {
+    setFundingLoading(true);
+    setFundingError(null);
+    try {
+      const res = await checkFunding({ data: { passcode: passcode.trim() } });
+      if (!res.ok) {
+        setFundingError(res.error ?? "Could not check wallet funding.");
+        setFunding(null);
+      } else {
+        setFunding(res);
+      }
+    } catch {
+      setFundingError("Could not check wallet funding. Please try again.");
+      setFunding(null);
+    } finally {
+      setFundingLoading(false);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    void navigator.clipboard.writeText(text);
+  };
+
 
   const load = async (code: string) => {
     setLoading(true);
