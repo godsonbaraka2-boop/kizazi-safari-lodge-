@@ -248,7 +248,10 @@ export const mintKizaziToken = createServerFn({ method: "POST" })
       const fee = await fetchBaseFee();
 
       // STEP 1: Fund the distributor wallet with at least 2 XLM
-      const funding = await fundDistributor(distributorKeyPair.publicKey());
+      const funding = await fundDistributor(
+        distributorKeyPair.publicKey(),
+        issuerKeyPair.publicKey(),
+      );
 
       // STEP 2: Trustline from distributor to issuer
       const distRaw = (await horizonGet(`/accounts/${distributorKeyPair.publicKey()}`)) as {
