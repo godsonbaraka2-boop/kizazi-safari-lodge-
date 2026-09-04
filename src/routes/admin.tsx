@@ -453,6 +453,83 @@ function Admin() {
                 )}
               </form>
 
+              <div className="border-t border-white/10 pt-4 space-y-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => void handleCheckFunding()}
+                    disabled={fundingLoading || !keysSaved}
+                    className="inline-flex items-center gap-2 border border-white/20 hover:bg-white/10 disabled:opacity-60 text-white px-5 py-3 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors"
+                  >
+                    {fundingLoading && (
+                      <span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                    )}
+                    {fundingLoading ? "Checking…" : "Check wallet funding"}
+                  </button>
+                  <span className="text-white/50 text-xs">
+                    Pi Testnet has no faucet — fund these addresses from your Pi Testnet wallet.
+                  </span>
+                </div>
+
+                {fundingError && <p className="text-red-300 text-xs">{fundingError}</p>}
+
+                {funding && (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="bg-white/5 border border-white/15 rounded-xl p-4 space-y-2">
+                      <p className="text-[10px] uppercase tracking-widest text-white/50">Issuer wallet</p>
+                      <p className="text-xs text-white/80">Needs ≥1 test-Pi to be activated.</p>
+                      <div className="flex items-center gap-2">
+                        <code className="text-xs font-mono break-all text-savannah flex-1">
+                          {funding.issuer.publicKey}
+                        </code>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(funding.issuer.publicKey)}
+                          className="text-[10px] uppercase tracking-widest border border-white/20 rounded-lg px-2 py-1 hover:bg-white/10"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                      <p className="text-xs">
+                        Balance: <span className={funding.issuer.exists ? "text-green-300" : "text-red-300"}>
+                          {funding.issuer.balance.toFixed(6)} XLM
+                        </span>
+                        {funding.issuer.exists ? " ✓ activated" : " ✗ not activated"}
+                      </p>
+                    </div>
+
+                    <div className="bg-white/5 border border-white/15 rounded-xl p-4 space-y-2">
+                      <p className="text-[10px] uppercase tracking-widest text-white/50">Distributor wallet</p>
+                      <p className="text-xs text-white/80">Needs ≥{funding.required} test-Pi before trustline + mint.</p>
+                      <div className="flex items-center gap-2">
+                        <code className="text-xs font-mono break-all text-savannah flex-1">
+                          {funding.distributor.publicKey}
+                        </code>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(funding.distributor.publicKey)}
+                          className="text-[10px] uppercase tracking-widest border border-white/20 rounded-lg px-2 py-1 hover:bg-white/10"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                      <p className="text-xs">
+                        Balance: <span className={funding.distributor.balance >= funding.required ? "text-green-300" : "text-red-300"}>
+                          {funding.distributor.balance.toFixed(6)} XLM
+                        </span>
+                        {funding.distributor.balance >= funding.required ? " ✓ ready" : ` ✗ need ${(funding.required - funding.distributor.balance).toFixed(6)} more`}
+                      </p>
+                      {funding.hasTrustline && (
+                        <p className="text-xs text-green-300">Trustline exists ✓</p>
+                      )}
+                      {Number(funding.kstBalance) > 0 && (
+                        <p className="text-xs text-purple-300">KST balance: {funding.kstBalance}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <button
                 type="button"
                 onClick={() => void handleMint()}
