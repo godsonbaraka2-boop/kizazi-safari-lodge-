@@ -311,3 +311,112 @@ export const mintKizaziToken = createServerFn({ method: "POST" })
       return { ok: false as const, error: message };
     }
   });
+
+/**
+ * Pi Testnet wallets refuse to send test-Pi to an address that does not exist
+ * yet ("The recipient's address does not exist."). On Stellar-based networks a
+ * brand-new address must be created with a create_account operation, which the
+ * wallet UI cannot do. This function does it from a funded wallet: the admin
+ * pastes the secret key of their own Pi Testnet wallet (the one holding
+ * test-Pi) and we create + fund the issuer and distributor accounts directly.
+ */
+export const activateWallets = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        passcode: z.string().min(1).max(200),
+        fundingSecret: secretKeySchema,
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    if (!checkPasscode(data.passcode)) {
+      return { ok: false as const, error: "Wrong admin passcode." };
+    }
+
+    const [issuerSecret, distributorSecret] = await Promise.all([
+      readWalletSecret("PI_ISSUER_SECRET"),
+      readWalletSecret("PI_DISTRIBUTOR_SECRET"),
+    ]);
+    if (!issuerSecret || !distributorSecret) {
+      return { ok: false as const, error: "Save both wallet secret keys first." };
+    }
+
+    const { Keypair, Account, TransactionBuilder, Operation } = await import("@stellar/stellar-base");
+
+    let funder: ReturnType<typeof Keypair.fromSecret>;
+    let issuerPub: string;
+    let distributorPub: string;
+    try {
+      funder = Keypair.fromSecret(data.fundingSecret);
+      issuerPub = Keypair.fromSecret(issuerSecret).publicKey();
+      distributorPub = Keypair.fromSecret(distributorSecret).publicKey();
+    } catch {
+      return { ok: false as const, error: "One of the secret keys is not a valid Pi wallet key." };
+    }
+
+    const ISSUER_SEED = "1.5";
+    const DISTRIBUTOR_SEED = String(MIN_NATIVE_BALANCE + 1);
+    const needed = Number(ISSUER_SEED) + Number(DISTRIBUTOR_SEED);
+
+    try {
+      const funderInfo = await accountInfo(funder.publicKey());
+      if (!funderInfo.exists) {
+        return {
+          ok: false as const,
+          error: `Funding wallet ${funder.publicKey()} does not exist on Pi Testnet. Use the secret key of the Pi Testnet wallet that already holds test-Pi.`,
+        };
+      }
+      if (funderInfo.balance < needed + 1) {
+        return {
+          ok: false as const,
+          error: `Funding wallet holds only ${funderInfo.balance} test-Pi. It needs at least ${needed + 1} test-Pi to create and fund both wallets.`,
+        };
+      }
+
+      const [issuer, distributor] = await Promise.all([
+        accountInfo(issuerPub),
+        accountInfo(distributorPub),
+      ]);
+
+      const ops: Array<{ target: string; amount: string; exists: boolean }> = [
+        { target: issuerPub, amount: ISSUER_SEED, exists: issuer.exists },
+        { target: distributorPub, amount: DISTRIBUTOR_SEED, exists: distributor.exists },
+      ];
+      const todo = ops.filter((o) => !o.exists);
+      if (todo.length === 0) {
+        return {
+          ok: true as const,
+          created: [] as string[],
+          message: "Both wallets already exist on Pi Testnet. You can mint now.",
+        };
+      }
+
+      const fee = await fetchBaseFee();
+      const raw = (await horizonGet(`/accounts/${funder.publicKey()}`)) as { sequence: string };
+      const source = new Account(funder.publicKey(), raw.sequence);
+      const builder = new TransactionBuilder(source, {
+        fee: String(Number(fee) * todo.length),
+        networkPassphrase: NETWORK_PASSPHRASE,
+      });
+      for (const op of todo) {
+        builder.addOperation(
+          Operation.createAccount({ destination: op.target, startingBalance: op.amount }),
+        );
+      }
+      const tx = builder.setTimeout(60).build();
+      tx.sign(funder);
+      const response = await submit(tx.toXDR());
+
+      return {
+        ok: true as const,
+        created: todo.map((o) => o.target),
+        txId: response.id ?? "",
+        message: "Wallets created and funded on Pi Testnet. You can mint now.",
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not activate the wallets.";
+      console.error("activateWallets failed:", message);
+      return { ok: false as const, error: message };
+    }
+  });
