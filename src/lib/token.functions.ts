@@ -95,7 +95,7 @@ async function keypairFromSecretOrPassphrase(input: string) {
   const seed = await bip39.mnemonicToSeed(words.join(" "));
   const { derivePath } = await import("ed25519-hd-key");
   const { key } = derivePath("m/44'/314159'/0'", seed.toString("hex"));
-  return Keypair.fromRawEd25519Seed(key);
+  return Keypair.fromRawEd25519Seed(Buffer.from(key));
 }
 
 const fundingCredentialSchema = z
