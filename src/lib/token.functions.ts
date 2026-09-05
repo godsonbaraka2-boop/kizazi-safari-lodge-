@@ -37,13 +37,31 @@ async function submit(xdr: string) {
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ tx: xdr }).toString(),
   });
-  const body = (await res.json()) as { id?: string; extras?: unknown; detail?: string };
+  const body = (await res.json()) as {
+    id?: string;
+    detail?: string;
+    extras?: { result_codes?: { transaction?: string; operations?: string[] } };
+  };
   if (!res.ok) {
     console.error("Pi Testnet submit failed", JSON.stringify(body).slice(0, 800));
-    throw new Error(body.detail ?? "Transaction rejected by Pi Testnet");
+    const codes = body.extras?.result_codes;
+    const opCodes = codes?.operations?.join(", ");
+    if (opCodes?.includes("op_line_full")) {
+      throw new Error(
+        "The distributor wallet already holds the full 1,000,000,000 KST supply, so no more tokens can be sent to it. Minting is already complete.",
+      );
+    }
+    if (opCodes?.includes("op_underfunded")) {
+      throw new Error(
+        "The issuer has already issued the full 1,000,000,000 KST supply. Minting is already complete.",
+      );
+    }
+    const detail = [codes?.transaction, opCodes].filter(Boolean).join(" / ");
+    throw new Error(detail ? `Pi Testnet rejected the transaction (${detail}).` : body.detail ?? "Transaction rejected by Pi Testnet");
   }
   return body;
 }
+
 
 /** Reads a wallet secret: database-stored value first, then backend env var. */
 async function readWalletSecret(name: "PI_ISSUER_SECRET" | "PI_DISTRIBUTOR_SECRET") {
