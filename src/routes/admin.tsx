@@ -540,18 +540,26 @@ function Admin() {
                           Copy
                         </button>
                       </div>
-                      <p className="text-xs">
-                        Balance: <span className={funding.distributor.balance >= funding.required ? "text-green-300" : "text-red-300"}>
-                          {funding.distributor.balance.toFixed(6)} XLM
-                        </span>
-                        {funding.distributor.balance >= funding.required ? " ✓ ready" : ` ✗ need ${(funding.required - funding.distributor.balance).toFixed(6)} more`}
-                      </p>
-                      {funding.hasTrustline && (
-                        <p className="text-xs text-green-300">Trustline exists ✓</p>
-                      )}
-                      {Number(funding.kstBalance) > 0 && (
-                        <p className="text-xs text-purple-300">KST balance: {funding.kstBalance}</p>
-                      )}
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="bg-white/5 border border-white/10 rounded-lg p-2">
+                          <p className="text-[10px] uppercase tracking-widest text-white/50">XLM balance</p>
+                          <p className={`text-sm font-bold ${funding.distributor.balance >= funding.required ? "text-green-300" : "text-red-300"}`}>
+                            {funding.distributor.balance.toFixed(6)}
+                          </p>
+                          <p className="text-[10px] text-white/50">
+                            {funding.distributor.balance >= funding.required ? "✓ ready" : `need ${(funding.required - funding.distributor.balance).toFixed(6)} more`}
+                          </p>
+                        </div>
+                        <div className="bg-white/5 border border-white/10 rounded-lg p-2">
+                          <p className="text-[10px] uppercase tracking-widest text-white/50">KST balance</p>
+                          <p className="text-sm font-bold text-purple-300">
+                            {Number(funding.kstBalance).toLocaleString()}
+                          </p>
+                          <p className="text-[10px] text-white/50">
+                            {funding.hasTrustline ? "✓ trustline exists" : "✗ no trustline"}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
