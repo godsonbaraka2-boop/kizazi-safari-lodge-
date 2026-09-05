@@ -37,13 +37,31 @@ async function submit(xdr: string) {
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ tx: xdr }).toString(),
   });
-  const body = (await res.json()) as { id?: string; extras?: unknown; detail?: string };
+  const body = (await res.json()) as {
+    id?: string;
+    detail?: string;
+    extras?: { result_codes?: { transaction?: string; operations?: string[] } };
+  };
   if (!res.ok) {
     console.error("Pi Testnet submit failed", JSON.stringify(body).slice(0, 800));
-    throw new Error(body.detail ?? "Transaction rejected by Pi Testnet");
+    const codes = body.extras?.result_codes;
+    const opCodes = codes?.operations?.join(", ");
+    if (opCodes?.includes("op_line_full")) {
+      throw new Error(
+        "The distributor wallet already holds the full 1,000,000,000 KST supply, so no more tokens can be sent to it. Minting is already complete.",
+      );
+    }
+    if (opCodes?.includes("op_underfunded")) {
+      throw new Error(
+        "The issuer has already issued the full 1,000,000,000 KST supply. Minting is already complete.",
+      );
+    }
+    const detail = [codes?.transaction, opCodes].filter(Boolean).join(" / ");
+    throw new Error(detail ? `Pi Testnet rejected the transaction (${detail}).` : body.detail ?? "Transaction rejected by Pi Testnet");
   }
   return body;
 }
+
 
 /** Reads a wallet secret: database-stored value first, then backend env var. */
 async function readWalletSecret(name: "PI_ISSUER_SECRET" | "PI_DISTRIBUTOR_SECRET") {
@@ -290,11 +308,27 @@ export const mintKizaziToken = createServerFn({ method: "POST" })
       // STEP 2: Trustline from distributor to issuer
       const distRaw = (await horizonGet(`/accounts/${distributorKeyPair.publicKey()}`)) as {
         sequence: string;
-        balances?: Array<{ asset_code?: string; asset_issuer?: string }>;
+        balances?: Array<{ asset_code?: string; asset_issuer?: string; balance?: string }>;
       };
-      const hasTrustline = (distRaw.balances ?? []).some(
+      const kstLine = (distRaw.balances ?? []).find(
         (b) => b.asset_code === ASSET_CODE && b.asset_issuer === issuerKeyPair.publicKey(),
       );
+      const hasTrustline = Boolean(kstLine);
+
+      // Already minted: don't try again (Horizon would reject with op_line_full/op_underfunded).
+      if (Number(kstLine?.balance ?? 0) >= Number(TOTAL_SUPPLY)) {
+        return {
+          ok: true as const,
+          alreadyMinted: true,
+          txId: "",
+          assetCode: ASSET_CODE,
+          amount: TOTAL_SUPPLY,
+          trustlineCreated: false,
+          distributorBalance: funding.balance,
+          fundedViaFaucet: funding.viaFaucet,
+        };
+      }
+
 
       if (!hasTrustline) {
         const distributorAccount = new Account(distributorKeyPair.publicKey(), distRaw.sequence);
@@ -332,6 +366,7 @@ export const mintKizaziToken = createServerFn({ method: "POST" })
 
       return {
         ok: true as const,
+        alreadyMinted: false,
         txId: response.id ?? "",
         assetCode: ASSET_CODE,
         amount: TOTAL_SUPPLY,

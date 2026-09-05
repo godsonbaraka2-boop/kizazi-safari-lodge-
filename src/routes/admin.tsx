@@ -189,7 +189,7 @@ function Admin() {
     setMintTxId(null);
     try {
       const res = await mintToken({ data: { passcode: passcode.trim() } });
-      if (res.ok) setMintTxId(res.txId);
+      if (res.ok) setMintTxId(res.alreadyMinted ? "already" : res.txId);
       else setMintError(res.error ?? "Minting failed.");
     } catch {
       setMintError("Minting failed. Please try again.");
@@ -623,7 +623,13 @@ function Admin() {
                 )}
                 {minting ? "Minting…" : "Mint Kizazi Token Now"}
               </button>
-              {mintTxId && (
+              {mintTxId === "already" && (
+                <p className="text-green-300 text-xs font-bold">
+                  Already minted — the distributor wallet holds the full 1,000,000,000 KST supply.
+                  No new transaction was needed.
+                </p>
+              )}
+              {mintTxId && mintTxId !== "already" && (
                 <div className="text-xs space-y-1">
                   <p className="text-green-300 font-bold">Success! Token minted.</p>
                   <p className="text-white/70">
