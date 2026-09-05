@@ -189,7 +189,7 @@ function Admin() {
     setMintTxId(null);
     try {
       const res = await mintToken({ data: { passcode: passcode.trim() } });
-      if (res.ok) setMintTxId(res.txId);
+      if (res.ok) setMintTxId(res.alreadyMinted ? "already" : res.txId);
       else setMintError(res.error ?? "Minting failed.");
     } catch {
       setMintError("Minting failed. Please try again.");
