@@ -308,11 +308,27 @@ export const mintKizaziToken = createServerFn({ method: "POST" })
       // STEP 2: Trustline from distributor to issuer
       const distRaw = (await horizonGet(`/accounts/${distributorKeyPair.publicKey()}`)) as {
         sequence: string;
-        balances?: Array<{ asset_code?: string; asset_issuer?: string }>;
+        balances?: Array<{ asset_code?: string; asset_issuer?: string; balance?: string }>;
       };
-      const hasTrustline = (distRaw.balances ?? []).some(
+      const kstLine = (distRaw.balances ?? []).find(
         (b) => b.asset_code === ASSET_CODE && b.asset_issuer === issuerKeyPair.publicKey(),
       );
+      const hasTrustline = Boolean(kstLine);
+
+      // Already minted: don't try again (Horizon would reject with op_line_full/op_underfunded).
+      if (Number(kstLine?.balance ?? 0) >= Number(TOTAL_SUPPLY)) {
+        return {
+          ok: true as const,
+          alreadyMinted: true,
+          txId: "",
+          assetCode: ASSET_CODE,
+          amount: TOTAL_SUPPLY,
+          trustlineCreated: false,
+          distributorBalance: funding.balance,
+          fundedViaFaucet: funding.viaFaucet,
+        };
+      }
+
 
       if (!hasTrustline) {
         const distributorAccount = new Account(distributorKeyPair.publicKey(), distRaw.sequence);
