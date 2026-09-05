@@ -366,6 +366,7 @@ export const mintKizaziToken = createServerFn({ method: "POST" })
 
       return {
         ok: true as const,
+        alreadyMinted: false,
         txId: response.id ?? "",
         assetCode: ASSET_CODE,
         amount: TOTAL_SUPPLY,
