@@ -565,22 +565,31 @@ function Admin() {
                   If your Pi Testnet wallet says{" "}
                   <span className="text-red-300">"The recipient's address does not exist"</span>, it is
                   because a brand-new Testnet address must first be <em>created</em> on-chain — the
-                  wallet app cannot do that. Paste the secret key of the Pi Testnet wallet that already
-                  holds test-Pi and we will create and fund both wallets for you. The key is used once
-                  for this transaction and is never stored.
+                  wallet app cannot do that. Paste either the 24-word passphrase of your funded Pi
+                  Testnet wallet (this is what Pi Browser shows you) or an S… secret key, and we will
+                  create and fund both wallets for you. It is used once for this transaction and is
+                  never stored.
                 </p>
-                <input
-                  type="password"
+                <textarea
                   autoComplete="off"
+                  rows={3}
                   value={fundingSecret}
                   onChange={(e) => setFundingSecret(e.target.value)}
-                  placeholder="S… secret key of your funded Pi Testnet wallet"
+                  placeholder="24-word passphrase of your funded Pi Testnet wallet (or S… secret key)"
                   className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-sm font-mono outline-none focus:border-savannah"
                 />
                 <button
                   type="button"
                   onClick={() => void handleActivate()}
-                  disabled={activating || !keysSaved || !/^S[A-Z2-7]{55}$/.test(fundingSecret.trim())}
+                  disabled={
+                    activating ||
+                    !keysSaved ||
+                    !(
+                      /^S[A-Z2-7]{55}$/.test(fundingSecret.trim()) ||
+                      [12, 24].includes(fundingSecret.trim().split(/\s+/).filter(Boolean).length)
+                    )
+                  }
+
                   className="inline-flex items-center gap-2 border border-savannah/60 bg-savannah/15 hover:bg-savannah/25 disabled:opacity-60 text-white px-5 py-3 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors"
                 >
                   {activating && (

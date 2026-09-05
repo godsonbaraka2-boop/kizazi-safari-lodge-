@@ -359,7 +359,7 @@ export const activateWallets = createServerFn({ method: "POST" })
     z
       .object({
         passcode: z.string().min(1).max(200),
-        fundingSecret: secretKeySchema,
+        fundingSecret: fundingCredentialSchema,
       })
       .parse(input),
   )
@@ -382,12 +382,17 @@ export const activateWallets = createServerFn({ method: "POST" })
     let issuerPub: string;
     let distributorPub: string;
     try {
-      funder = Keypair.fromSecret(data.fundingSecret);
+      funder = await keypairFromSecretOrPassphrase(data.fundingSecret);
       issuerPub = Keypair.fromSecret(issuerSecret).publicKey();
       distributorPub = Keypair.fromSecret(distributorSecret).publicKey();
-    } catch {
-      return { ok: false as const, error: "One of the secret keys is not a valid Pi wallet key." };
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "One of the secret keys is not a valid Pi wallet key.";
+      return { ok: false as const, error: message };
     }
+
 
     const ISSUER_SEED = "1.5";
     const DISTRIBUTOR_SEED = String(MIN_NATIVE_BALANCE + 1);
