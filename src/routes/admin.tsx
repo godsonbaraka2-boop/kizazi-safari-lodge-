@@ -623,7 +623,13 @@ function Admin() {
                 )}
                 {minting ? "Minting…" : "Mint Kizazi Token Now"}
               </button>
-              {mintTxId && (
+              {mintTxId === "already" && (
+                <p className="text-green-300 text-xs font-bold">
+                  Already minted — the distributor wallet holds the full 1,000,000,000 KST supply.
+                  No new transaction was needed.
+                </p>
+              )}
+              {mintTxId && mintTxId !== "already" && (
                 <div className="text-xs space-y-1">
                   <p className="text-green-300 font-bold">Success! Token minted.</p>
                   <p className="text-white/70">
