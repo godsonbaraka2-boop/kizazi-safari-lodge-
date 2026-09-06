@@ -8,6 +8,7 @@ import {
   getWalletSecretStatus,
   mintKizaziToken,
   saveWalletSecrets,
+  setIssuerHomeDomain,
 } from "@/lib/token.functions";
 
 
@@ -118,10 +119,38 @@ function Admin() {
   const [fundingLoading, setFundingLoading] = useState(false);
   const [fundingError, setFundingError] = useState<string | null>(null);
   const activate = useServerFn(activateWallets);
+  const setHomeDomainFn = useServerFn(setIssuerHomeDomain);
+  const [homeDomain, setHomeDomainValue] = useState("kizazi-safari-lodge.vercel.app");
+  const [settingDomain, setSettingDomain] = useState(false);
+  const [domainError, setDomainError] = useState<string | null>(null);
+  const [domainMessage, setDomainMessage] = useState<string | null>(null);
   const [fundingSecret, setFundingSecret] = useState("");
   const [activating, setActivating] = useState(false);
   const [activateError, setActivateError] = useState<string | null>(null);
   const [activateMessage, setActivateMessage] = useState<string | null>(null);
+
+  const handleSetHomeDomain = async () => {
+    setSettingDomain(true);
+    setDomainError(null);
+    setDomainMessage(null);
+    try {
+      const res = await setHomeDomainFn({
+        data: { passcode: passcode.trim(), homeDomain: homeDomain.trim() },
+      });
+      if (res.ok) {
+        setDomainMessage(
+          `Done! Pi Wallet will now read ${res.tomlUrl} to display KST.`,
+        );
+      } else {
+        setDomainError(res.error ?? "Could not set the home domain.");
+      }
+    } catch {
+      setDomainError("Could not set the home domain. Please try again.");
+    } finally {
+      setSettingDomain(false);
+    }
+  };
+
 
   const handleActivate = async () => {
     setActivating(true);
