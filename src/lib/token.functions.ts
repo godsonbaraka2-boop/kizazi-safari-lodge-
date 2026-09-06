@@ -494,3 +494,67 @@ export const activateWallets = createServerFn({ method: "POST" })
       return { ok: false as const, error: message };
     }
   });
+
+/**
+ * Final step so Pi Wallet can discover KST: set the issuer account's
+ * home_domain to the site that serves /pi.toml.
+ */
+export const setIssuerHomeDomain = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        passcode: z.string().min(1).max(200),
+        homeDomain: z
+          .string()
+          .trim()
+          .min(4)
+          .max(32)
+          .transform((v) => v.replace(/^https?:\/\//i, "").replace(/\/+$/, "")),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    if (!checkPasscode(data.passcode)) {
+      return { ok: false as const, error: "Wrong admin passcode." };
+    }
+    const issuerSecret = await readWalletSecret("PI_ISSUER_SECRET");
+    if (!issuerSecret) {
+      return { ok: false as const, error: "Save the issuer wallet secret key first." };
+    }
+
+    const { Keypair, Account, TransactionBuilder, Operation } = await import(
+      "@stellar/stellar-base"
+    );
+    try {
+      const issuer = Keypair.fromSecret(issuerSecret);
+      const info = await accountInfo(issuer.publicKey());
+      if (!info.exists) {
+        return {
+          ok: false as const,
+          error: "The issuer wallet is not activated on Pi Testnet yet.",
+        };
+      }
+      const fee = await fetchBaseFee();
+      const raw = (await horizonGet(`/accounts/${issuer.publicKey()}`)) as { sequence: string };
+      const tx = new TransactionBuilder(new Account(issuer.publicKey(), raw.sequence), {
+        fee,
+        networkPassphrase: NETWORK_PASSPHRASE,
+      })
+        .addOperation(Operation.setOptions({ homeDomain: data.homeDomain }))
+        .setTimeout(60)
+        .build();
+      tx.sign(issuer);
+      const response = await submit(tx.toXDR());
+      return {
+        ok: true as const,
+        txId: response.id ?? "",
+        homeDomain: data.homeDomain,
+        tomlUrl: `https://${data.homeDomain}/pi.toml`,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not set the home domain.";
+      console.error("setIssuerHomeDomain failed:", message);
+      return { ok: false as const, error: message };
+    }
+  });
+
