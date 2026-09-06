@@ -638,7 +638,38 @@ function Admin() {
                 </div>
               )}
               {mintError && <p className="text-red-300 text-xs">{mintError}</p>}
+
+              <div className="mt-6 border-t border-white/15 pt-5 space-y-3">
+                <h3 className="text-white font-bold text-sm uppercase tracking-widest">
+                  Show KST in Pi Wallet
+                </h3>
+                <p className="text-white/60 text-xs">
+                  Links the token to your website so Pi Wallet can find it. The website must serve
+                  /pi.toml.
+                </p>
+                <input
+                  type="text"
+                  value={homeDomain}
+                  onChange={(e) => setHomeDomainValue(e.target.value)}
+                  placeholder="kizazi-safari-lodge.vercel.app"
+                  className="w-full bg-black/40 border border-white/20 rounded-xl px-4 py-3 text-white text-sm font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={() => void handleSetHomeDomain()}
+                  disabled={settingDomain || !keysSaved || homeDomain.trim().length < 4}
+                  className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white px-5 py-3 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors"
+                >
+                  {settingDomain && (
+                    <span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                  )}
+                  {settingDomain ? "Saving…" : "Set home domain"}
+                </button>
+                {domainMessage && <p className="text-green-300 text-xs">{domainMessage}</p>}
+                {domainError && <p className="text-red-300 text-xs">{domainError}</p>}
+              </div>
             </section>
+
 
 
 
