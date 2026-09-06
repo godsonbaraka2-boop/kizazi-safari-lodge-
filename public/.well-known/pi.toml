@@ -1,0 +1,20 @@
+VERSION="2.0.0"
+NETWORK_PASSPHRASE="Pi Testnet"
+HORIZON_URL="https://api.testnet.minepi.com"
+
+[DOCUMENTATION]
+ORG_NAME="Kizazi Safari Lodge"
+ORG_URL="https://kizazi-safari-lodge.vercel.app"
+ORG_DESCRIPTION="Safari lodge in Tanzania accepting Pi Network payments for rooms, dining and tours."
+ORG_OFFICIAL_EMAIL="godsonbaraka2@gmail.com"
+
+[[CURRENCIES]]
+code="KST"
+issuer="GBFZSQ2RJ62K4CW7ZFMYXY5TVSMBBGVAR6GLTVHYOQHJ43V4ZUOZME3O"
+display_decimals=7
+name="Kizazi Safari Token"
+desc="Utility token of Kizazi Safari Lodge, usable for rooms, dining and safari tours."
+conditions="Fixed supply of 1,000,000,000 KST. No additional tokens will be issued."
+fixed_number=1000000000
+is_asset_anchored=false
+status="test"
