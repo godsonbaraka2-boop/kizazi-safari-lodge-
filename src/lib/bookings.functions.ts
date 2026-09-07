@@ -17,10 +17,65 @@ const bookingSchema = z.object({
   notes: z.string().max(500).optional(),
 });
 
+/** Statuses that occupy a room and therefore block another booking. */
+const BLOCKING_STATUSES = ["confirmed", "paid", "checked-in"] as const;
+
+export const ROOM_TAKEN_MESSAGE =
+  "Chumba hiki kimeshachukuliwa kwenye tarehe ulizochagua. Tafadhali chagua tarehe nyingine au chumba kingine.";
+
+const availabilitySchema = z.object({
+  room: z.string().min(1).max(120),
+  checkIn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  checkOut: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+});
+
+/**
+ * Overlap rule: (requested_check_in < existing_check_out) AND (requested_check_out > existing_check_in)
+ */
+async function findConflicts(room: string, checkIn: string, checkOut: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin
+    .from("bookings")
+    .select("id, check_in, check_out")
+    .eq("room", room)
+    .in("status", BLOCKING_STATUSES as unknown as string[])
+    .gt("nights", 0)
+    .lt("check_in", checkOut)
+    .gt("check_out", checkIn)
+    .limit(1);
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+/** Public availability check used by the booking form before the Pi payment starts. */
+export const checkRoomAvailability = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => availabilitySchema.parse(input))
+  .handler(async ({ data }) => {
+    if (data.checkOut <= data.checkIn) {
+      return { available: false as const, reason: "Check-out must be after check-in." };
+    }
+    try {
+      const conflicts = await findConflicts(data.room, data.checkIn, data.checkOut);
+      return conflicts.length > 0
+        ? { available: false as const, reason: ROOM_TAKEN_MESSAGE }
+        : { available: true as const, reason: null };
+    } catch (err) {
+      console.error("checkRoomAvailability failed", err);
+      return { available: false as const, reason: "Could not verify availability. Please try again." };
+    }
+  });
+
 export const saveBooking = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => bookingSchema.parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Server-side double-booking guard (authoritative).
+    const conflicts = await findConflicts(data.room, data.checkIn, data.checkOut);
+    if (conflicts.length > 0) {
+      return { ok: false as const, conflict: true as const, message: ROOM_TAKEN_MESSAGE };
+    }
+
     const { error } = await supabaseAdmin.from("bookings").insert({
       confirmation_code: data.confirmationCode,
       guest_name: data.guestName,
