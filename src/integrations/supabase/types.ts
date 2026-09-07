@@ -95,6 +95,48 @@ export type Database = {
         }
         Relationships: []
       }
+      dining_orders: {
+        Row: {
+          created_at: string
+          guest_name: string | null
+          guest_room: string
+          id: string
+          item_name: string
+          payment_id: string | null
+          quantity: number
+          status: string
+          total_pi: number
+          txid: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          guest_name?: string | null
+          guest_room?: string
+          id?: string
+          item_name: string
+          payment_id?: string | null
+          quantity?: number
+          status?: string
+          total_pi?: number
+          txid?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          guest_name?: string | null
+          guest_room?: string
+          id?: string
+          item_name?: string
+          payment_id?: string | null
+          quantity?: number
+          status?: string
+          total_pi?: number
+          txid?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
