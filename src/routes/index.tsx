@@ -85,6 +85,7 @@ function Index() {
   const [payingItem, setPayingItem] = useState<string | null>(null);
   const [payingTour, setPayingTour] = useState<string | null>(null);
   const logPayment = useServerFn(recordPiPayment);
+  const sendToKitchen = useServerFn(createDiningOrder);
 
   const savePaymentRecord = async (
     kind: "room" | "food" | "tour",
