@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { useServerFn } from "@tanstack/react-start";
 
 import { LanguageSwitcher, useT } from "@/lib/i18n";
 import { usePiAuth } from "@/lib/use-pi-auth";
 import { usePiPayment } from "@/lib/use-pi-payment";
-import { saveBooking, recordPiPayment } from "@/lib/bookings.functions";
+import { saveBooking, recordPiPayment, checkRoomAvailability } from "@/lib/bookings.functions";
+import { createDiningOrder } from "@/lib/dining.functions";
 import heroImg from "@/assets/hero.jpg";
 import roomSavannah from "@/assets/room-savannah.jpg";
 import roomAcacia from "@/assets/room-acacia.jpg";
@@ -85,6 +86,7 @@ function Index() {
   const [payingItem, setPayingItem] = useState<string | null>(null);
   const [payingTour, setPayingTour] = useState<string | null>(null);
   const logPayment = useServerFn(recordPiPayment);
+  const sendToKitchen = useServerFn(createDiningOrder);
 
   const savePaymentRecord = async (
     kind: "room" | "food" | "tour",
@@ -133,17 +135,43 @@ function Index() {
 
 
   const handleMenuPay = async (item: { name: string; piAmount: number }) => {
+    const roomAnswer = window.prompt(
+      `Which room should "${item.name}" be delivered to? (type Walk-in if you are not staying)`,
+      "Walk-in",
+    );
+    if (roomAnswer === null) return;
+    const guestRoom = roomAnswer.trim().slice(0, 60) || "Walk-in";
+    const qtyAnswer = window.prompt("How many portions?", "1");
+    if (qtyAnswer === null) return;
+    const quantity = Math.min(50, Math.max(1, parseInt(qtyAnswer, 10) || 1));
+    const amount = Number((item.piAmount * quantity).toPrecision(6));
+
     setPayingItem(item.name);
     try {
       const res = await piPay({
-        amount: item.piAmount,
-        memo: `Kizazi Lodge — ${item.name}`,
-        metadata: { kind: "food_order", item: item.name },
+        amount,
+        memo: `Kizazi Lodge — ${item.name} x${quantity}`,
+        metadata: { kind: "food_order", item: item.name, quantity, room: guestRoom },
       });
-      await savePaymentRecord("food", item.name, item.piAmount, res);
+      await savePaymentRecord("food", item.name, amount, res);
+      try {
+        await sendToKitchen({
+          data: {
+            itemName: item.name,
+            quantity,
+            guestRoom,
+            guestName: piUser ? `@${piUser.username}` : undefined,
+            totalPi: amount,
+            paymentId: res?.paymentId,
+            txid: res?.txid,
+          },
+        });
+      } catch (err) {
+        console.error("Could not send order to kitchen", err);
+      }
       window.open(
         wa(
-          `Hello, I just paid ${item.piAmount} π for "${item.name}" via Pi Network. Payment ID: ${res.paymentId}, txid: ${res.txid}. Please prepare my order.`,
+          `Hello, I just paid ${amount} π for "${item.name}" x${quantity} (room: ${guestRoom}) via Pi Network. Payment ID: ${res.paymentId}, txid: ${res.txid}. The kitchen has my order.`,
         ),
         "_blank",
       );
@@ -947,6 +975,8 @@ function BookingForm() {
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
+  const [taken, setTaken] = useState<string | null>(null);
+  const [checkingAvail, setCheckingAvail] = useState(false);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -962,6 +992,32 @@ function BookingForm() {
   })();
 
   const total = +(nights * PI_PER_NIGHT).toFixed(6);
+
+  const verifyAvailability = useServerFn(checkRoomAvailability);
+
+  // Live availability check whenever the room or dates change.
+  useEffect(() => {
+    if (!checkIn || !checkOut || nights < 1) {
+      setTaken(null);
+      return;
+    }
+    let active = true;
+    setCheckingAvail(true);
+    verifyAvailability({ data: { room, checkIn, checkOut } })
+      .then((res) => {
+        if (!active) return;
+        setTaken(res.available ? null : (res.reason ?? "This room is not available."));
+      })
+      .catch(() => {
+        if (active) setTaken(null);
+      })
+      .finally(() => {
+        if (active) setCheckingAvail(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [room, checkIn, checkOut, nights, verifyAvailability]);
 
   const makeCode = () => {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -979,10 +1035,22 @@ function BookingForm() {
     if (!checkIn || !checkOut) return setError("Please choose your check-in and check-out dates.");
     if (nights < 1) return setError("Check-out must be after check-in.");
     if (guests < 1 || guests > 12) return setError("Number of guests must be between 1 and 12.");
+    if (taken) return setError(taken);
     setError(null);
 
     const fullPhone = `+255${digits}`;
     const amount = total > 0 ? total : PI_PER_NIGHT;
+
+    // Final authoritative check right before the Pi payment starts.
+    try {
+      const avail = await verifyAvailability({ data: { room, checkIn, checkOut } });
+      if (!avail.available) {
+        setTaken(avail.reason ?? "This room is not available.");
+        return setError(avail.reason ?? "This room is not available.");
+      }
+    } catch {
+      /* network hiccup — server guard in saveBooking still protects us */
+    }
     try {
       const res = await piPay({
         amount,
