@@ -1035,10 +1035,22 @@ function BookingForm() {
     if (!checkIn || !checkOut) return setError("Please choose your check-in and check-out dates.");
     if (nights < 1) return setError("Check-out must be after check-in.");
     if (guests < 1 || guests > 12) return setError("Number of guests must be between 1 and 12.");
+    if (taken) return setError(taken);
     setError(null);
 
     const fullPhone = `+255${digits}`;
     const amount = total > 0 ? total : PI_PER_NIGHT;
+
+    // Final authoritative check right before the Pi payment starts.
+    try {
+      const avail = await verifyAvailability({ data: { room, checkIn, checkOut } });
+      if (!avail.available) {
+        setTaken(avail.reason ?? "This room is not available.");
+        return setError(avail.reason ?? "This room is not available.");
+      }
+    } catch {
+      /* network hiccup — server guard in saveBooking still protects us */
+    }
     try {
       const res = await piPay({
         amount,
