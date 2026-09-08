@@ -975,6 +975,8 @@ function BookingForm() {
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
+  const [taken, setTaken] = useState<string | null>(null);
+  const [checkingAvail, setCheckingAvail] = useState(false);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -990,6 +992,32 @@ function BookingForm() {
   })();
 
   const total = +(nights * PI_PER_NIGHT).toFixed(6);
+
+  const verifyAvailability = useServerFn(checkRoomAvailability);
+
+  // Live availability check whenever the room or dates change.
+  useEffect(() => {
+    if (!checkIn || !checkOut || nights < 1) {
+      setTaken(null);
+      return;
+    }
+    let active = true;
+    setCheckingAvail(true);
+    verifyAvailability({ data: { room, checkIn, checkOut } })
+      .then((res) => {
+        if (!active) return;
+        setTaken(res.available ? null : (res.reason ?? "This room is not available."));
+      })
+      .catch(() => {
+        if (active) setTaken(null);
+      })
+      .finally(() => {
+        if (active) setCheckingAvail(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [room, checkIn, checkOut, nights, verifyAvailability]);
 
   const makeCode = () => {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
