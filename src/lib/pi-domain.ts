@@ -6,6 +6,7 @@
 // ilimradi validation-key.txt ipo sahihi na Pi SDK imepakia.
 
 export const PI_ALLOWED_ORIGINS: string[] = [
+  "https://kizazi-safari-lodge.vercel.app",
   "https://kizazilodgeuqc0446.pinet.com",
   // Domain zote za Vercel/custom zinaruhusiwa automatically (tazama isAllowedOrigin).
 ];
