@@ -33,6 +33,7 @@ export function usePiPayment() {
                 "Pi.createPayment unavailable. Open this app inside the Pi Browser.",
               );
             }
+            console.info("[Pi.pay] createPayment", input, window.location.origin);
             Pi.createPayment(
               {
                 amount: input.amount,
@@ -41,6 +42,7 @@ export function usePiPayment() {
               },
               {
                 onReadyForServerApproval: async (paymentId) => {
+                  console.info("[Pi.pay] approving", paymentId);
                   try {
                     await approve({ data: { paymentId } });
                   } catch (e) {
@@ -48,6 +50,7 @@ export function usePiPayment() {
                   }
                 },
                 onReadyForServerCompletion: async (paymentId, txid) => {
+                  console.info("[Pi.pay] completing", paymentId, txid);
                   try {
                     await complete({ data: { paymentId, txid } });
                     resolve({ paymentId, txid });
@@ -58,7 +61,8 @@ export function usePiPayment() {
                 onCancel: (paymentId) => {
                   reject(new Error(`Payment cancelled (${paymentId})`));
                 },
-                onError: (err) => {
+                onError: (err, payment) => {
+                  console.error("[Pi.pay] onError", err, payment);
                   reject(err);
                 },
               },

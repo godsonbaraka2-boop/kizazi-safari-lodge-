@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 
-export const PI_APP_URL = "https://kizazilodgeuqc0446.pinet.com";
+export const PI_APP_URL = "https://kizazi-safari-lodge.vercel.app";
 export const WRONG_DOMAIN_EVENT = "kizazi:wrong-domain";
 
 export type WrongDomainReason =
@@ -19,7 +19,7 @@ export type WrongDomainDetail = {
 
 export function isPiAppDomain(): boolean {
   if (typeof window === "undefined") return true;
-  return /(^|\.)pinet\.com$/i.test(window.location.hostname);
+  return /(^|\.)(pinet\.com|vercel\.app)$/i.test(window.location.hostname);
 }
 
 export function dispatchWrongDomain(detail: WrongDomainDetail = {}) {

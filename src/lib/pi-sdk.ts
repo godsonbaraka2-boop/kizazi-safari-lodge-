@@ -64,27 +64,38 @@ function loadPiSdk(): Promise<PiSdk> {
   });
 }
 
-// Sandbox (Testnet) hutumika tu kwenye dev/preview hosts.
-// Kwenye pinet.com / production domain, app inaendesha Mainnet ready mode
-// ili iweze kuingia Pi ecosystem.
+// Primary production domain registered in the Pi Developer Portal.
+export const PI_PRIMARY_URL = "https://kizazi-safari-lodge.vercel.app";
+
+// Sandbox mode is ONLY for local dev / Lovable previews opened outside Pi Browser.
+// vercel.app and pinet.com must run with sandbox:false — inside Pi Browser the
+// SDK talks to Pi servers directly; sandbox:true there causes
+// "Transaction not allowed" / "Invalid redirect_uri".
 function isSandboxHost(): boolean {
   if (typeof window === "undefined") return false;
   const host = window.location.hostname;
   return (
     host === "localhost" ||
     host === "127.0.0.1" ||
-    /(^|\.)lovable\.app$/i.test(host) ||
-    /(^|\.)vercel\.app$/i.test(host)
+    /(^|\.)lovable\.app$/i.test(host)
   );
 }
 
 let initPromise: Promise<PiSdk> | null = null;
 export function ensurePiReady(): Promise<PiSdk> {
   if (!initPromise) {
-    initPromise = loadPiSdk().then(async (Pi) => {
-      await Promise.resolve(Pi.init({ version: "2.0", sandbox: isSandboxHost() }));
-      return Pi;
-    });
+    initPromise = loadPiSdk()
+      .then(async (Pi) => {
+        const sandbox = isSandboxHost();
+        console.info("[Pi] init", { host: window.location.host, sandbox, sdk: SDK_SRC });
+        await Promise.resolve(Pi.init({ version: "2.0", sandbox }));
+        return Pi;
+      })
+      .catch((e) => {
+        console.error("[Pi] init failed", e);
+        initPromise = null;
+        throw e;
+      });
   }
   return initPromise;
 }
