@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, type FormEvent } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import PhoneInput, { isValidPhoneNumber, type Value } from "react-phone-number-input";
 
 import { LanguageSwitcher, useT } from "@/lib/i18n";
 import { usePiAuth } from "@/lib/use-pi-auth";
@@ -43,6 +44,8 @@ import foodChai from "@/assets/food/chai.jpg";
 import foodMangoJuice from "@/assets/food/mango-juice.jpg";
 import foodBaobab from "@/assets/food/baobab.jpg";
 import foodCocktail from "@/assets/food/cocktail.jpg";
+import lodgeOffice from "@/assets/lodge-office.jpg";
+import lodgeKitchen from "@/assets/lodge-kitchen.jpg";
 
 
 export const Route = createFileRoute("/")({
@@ -380,6 +383,64 @@ function Index() {
             </article>
           ))}
         </div>
+      </section>
+
+      {/* Lodge office and kitchen */}
+      <section aria-labelledby="lodge-operations-title" className="bg-earth-900 text-white">
+        <h2 id="lodge-operations-title" className="sr-only">Lodge office and kitchen</h2>
+        <article className="grid lg:grid-cols-2 items-stretch">
+          <div className="relative min-h-[360px] lg:min-h-[560px] overflow-hidden">
+            <img
+              src={lodgeOffice}
+              alt="Guest Services and Lodge Office building at Kizazi Safari Lodge"
+              loading="lazy"
+              width={1536}
+              height={1024}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          </div>
+          <div className="flex items-center px-6 py-14 md:px-14 lg:px-16">
+            <div className="max-w-xl">
+              <span className="mb-4 inline-block bg-savannah px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white">
+                Guest Services
+              </span>
+              <h3 className="mb-5 font-display text-3xl italic md:text-5xl">
+                Guest Services &amp; Lodge Office
+              </h3>
+              <p className="text-sm leading-7 text-white/70 md:text-base">
+                The welcoming heart of your stay. Our reception and lodge team are here for
+                check-in, safari planning, travel assistance and every detail that makes your
+                Serengeti journey effortless.
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <article className="grid lg:grid-cols-2 items-stretch border-t border-white/10">
+          <div className="relative min-h-[360px] overflow-hidden lg:order-2 lg:min-h-[560px]">
+            <img
+              src={lodgeKitchen}
+              alt="Modern professional kitchen building at Kizazi Safari Lodge"
+              loading="lazy"
+              width={1536}
+              height={1024}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          </div>
+          <div className="flex items-center bg-sand-100 px-6 py-14 text-earth-900 md:px-14 lg:px-16">
+            <div className="max-w-xl lg:ml-auto">
+              <span className="mb-4 inline-block bg-savannah px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white">
+                Culinary House
+              </span>
+              <h3 className="mb-5 font-display text-3xl italic md:text-5xl">The Kizazi Kitchen</h3>
+              <p className="text-sm leading-7 text-earth-900/70 md:text-base">
+                A modern culinary workspace where fresh Tanzanian ingredients meet refined
+                technique. Our chefs prepare every meal in a spotless open kitchen designed for
+                quality, flavour and warm safari hospitality.
+              </p>
+            </div>
+          </div>
+        </article>
       </section>
 
       {/* Facilities / Attractions */}
@@ -967,7 +1028,7 @@ function BookingForm() {
   const { pay: piPay, paying, error: piError } = usePiPayment();
   const storeBooking = useServerFn(saveBooking);
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState(""); // digits only, no +255
+  const [phone, setPhone] = useState<Value | undefined>();
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [guests, setGuests] = useState(2);
@@ -1029,16 +1090,17 @@ function BookingForm() {
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const trimmedName = name.trim().slice(0, 80);
-    const digits = phone.replace(/\D/g, "");
     if (!trimmedName) return setError("Please enter your full name.");
-    if (digits.length !== 9) return setError("Phone number must be 9 digits after +255.");
+    if (!phone || !isValidPhoneNumber(phone)) {
+      return setError("Please choose your country and enter a valid phone number.");
+    }
     if (!checkIn || !checkOut) return setError("Please choose your check-in and check-out dates.");
     if (nights < 1) return setError("Check-out must be after check-in.");
     if (guests < 1 || guests > 12) return setError("Number of guests must be between 1 and 12.");
     if (taken) return setError(taken);
     setError(null);
 
-    const fullPhone = `+255${digits}`;
+    const fullPhone = phone;
     const amount = total > 0 ? total : PI_PER_NIGHT;
 
     // Final authoritative check right before the Pi payment starts.
@@ -1103,7 +1165,7 @@ function BookingForm() {
       `*NEW BOOKING — KIZAZI SAFARI LODGE*\n\n` +
       `Confirmation Code: ${confirmation}\n` +
       `Guest Name: ${name}\n` +
-      `Phone: +255${phone}\n` +
+      `Phone: ${phone ?? ""}\n` +
       `Room: ${room}\n` +
       `Check-in: ${checkIn}\n` +
       `Check-out: ${checkOut}\n` +
@@ -1120,7 +1182,7 @@ function BookingForm() {
           {confirmation}
         </p>
         <p className="text-white/50 text-xs">
-          Keep this code safe. We'll be in touch on +255{phone.replace(/\D/g, "")} shortly.
+          Keep this code safe. We'll be in touch on {phone} shortly.
         </p>
         <a
           href={wa(waMsg)}
@@ -1217,24 +1279,22 @@ function BookingForm() {
 
       <div>
         <label htmlFor="bf-phone" className={label}>Phone Number</label>
-        <div className="flex items-stretch rounded-xl overflow-hidden border border-white/15 focus-within:border-savannah bg-white">
-          <span className="px-3 flex items-center text-sm font-semibold text-earth-900 bg-sand-100 border-r border-white/15 select-none">
-            +255
-          </span>
-          <input
-            id="bf-phone"
-            type="tel"
-            inputMode="numeric"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
-            required
-            autoComplete="tel-national"
-            pattern="[0-9]{9}"
-            maxLength={9}
-            className="flex-1 bg-white px-3 py-3 text-sm text-earth-900 focus:outline-none"
-          />
-        </div>
-        <p className="mt-1 text-[10px] text-white/40">9 digits after +255 (e.g. 712345678)</p>
+        <PhoneInput
+          id="bf-phone"
+          international
+          defaultCountry="TZ"
+          countryCallingCodeEditable={false}
+          value={phone}
+          onChange={setPhone}
+          required
+          autoComplete="tel"
+          aria-label="International phone number"
+          placeholder="Enter phone number"
+          className="international-phone-input"
+        />
+        <p className="mt-1 text-[10px] text-white/40">
+          Choose your country, then enter your phone number.
+        </p>
       </div>
 
       <div>
