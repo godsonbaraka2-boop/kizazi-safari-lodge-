@@ -46,6 +46,7 @@ import foodBaobab from "@/assets/food/baobab.jpg";
 import foodCocktail from "@/assets/food/cocktail.jpg";
 import lodgeOffice from "@/assets/lodge-office.jpg";
 import lodgeKitchen from "@/assets/lodge-kitchen.jpg";
+import lodgePool from "@/assets/lodge-pool.jpg";
 
 
 export const Route = createFileRoute("/")({
@@ -437,6 +438,34 @@ function Index() {
                 A modern culinary workspace where fresh Tanzanian ingredients meet refined
                 technique. Our chefs prepare every meal in a spotless open kitchen designed for
                 quality, flavour and warm safari hospitality.
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <article className="grid lg:grid-cols-2 items-stretch border-t border-white/10">
+          <div className="relative min-h-[360px] overflow-hidden lg:min-h-[560px]">
+            <img
+              src={lodgePool}
+              alt="Modern infinity swimming pool overlooking the Serengeti at dusk at Kizazi Safari Lodge"
+              loading="lazy"
+              width={1536}
+              height={1024}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          </div>
+          <div className="flex items-center px-6 py-14 md:px-14 lg:px-16">
+            <div className="max-w-xl">
+              <span className="mb-4 inline-block bg-savannah px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white">
+                Pool &amp; Leisure
+              </span>
+              <h3 className="mb-5 font-display text-3xl italic md:text-5xl">
+                The Infinity Pool
+              </h3>
+              <p className="text-sm leading-7 text-white/70 md:text-base">
+                Our sparkling modern infinity pool appears to melt into the Serengeti horizon.
+                Swim at sunrise, cool off after a game drive and watch the sky burn orange at
+                dusk from a comfortable lounger, with drinks and towels served poolside.
               </p>
             </div>
           </div>
