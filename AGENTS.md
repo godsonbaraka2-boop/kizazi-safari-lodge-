@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Use `react-phone-number-input` for guest phone capture so bookings are validated and stored in international E.164 format.
