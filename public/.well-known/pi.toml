@@ -5,8 +5,14 @@ HORIZON_URL="https://api.testnet.minepi.com"
 [DOCUMENTATION]
 ORG_NAME="Kizazi Safari Lodge"
 ORG_URL="https://kizazi-safari-lodge.vercel.app"
+ORG_LOGO="https://kizazi-safari-lodge.vercel.app/logo.png"
 ORG_DESCRIPTION="Safari lodge in Tanzania accepting Pi Network payments for rooms, dining and tours."
 ORG_OFFICIAL_EMAIL="godsonbaraka2@gmail.com"
+ORG_PRIVACY_POLICY_URL="https://kizazi-safari-lodge.vercel.app/privacy-policy"
+ORG_TERMS_URL="https://kizazi-safari-lodge.vercel.app/terms"
+ORG_REPOSITORY_URL="https://github.com/godsonbaraka2-boop/kizazi-safari-lodge-"
+ORG_CONTACT_EMAIL="godsonbaraka2@gmail.com"
+ORG_CONTACT_PHONE="+255654617865"
 
 [[CURRENCIES]]
 code="KST"
