@@ -12,7 +12,7 @@ const bookingSchema = z.object({
   room: z.string().min(1).max(120),
   pricePerNight: z.number().min(0).max(1000000),
   totalPi: z.number().min(0).max(1000000),
-  paymentId: z.string().max(200).optional(),
+  paymentId: z.string().min(1).max(200),
   txid: z.string().max(200).optional(),
   notes: z.string().max(500).optional(),
 });
@@ -70,6 +70,12 @@ export const saveBooking = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    const { verifyPiPayment, paymentAlreadyUsed } = await import("./pi-verify.server");
+    if (await paymentAlreadyUsed("bookings", data.paymentId)) {
+      return { ok: false as const, message: "This payment was already used." };
+    }
+    const verified = await verifyPiPayment(data.paymentId, data.totalPi);
+    if (!verified.ok) return { ok: false as const, message: verified.reason };
     // Server-side double-booking guard (authoritative).
     const conflicts = await findConflicts(data.room, data.checkIn, data.checkOut);
     if (conflicts.length > 0) {
@@ -87,8 +93,8 @@ export const saveBooking = createServerFn({ method: "POST" })
       room: data.room,
       price_per_night: data.pricePerNight,
       total_pi: data.totalPi,
-      payment_id: data.paymentId ?? null,
-      txid: data.txid ?? null,
+      payment_id: data.paymentId,
+      txid: verified.txid,
       notes: data.notes ?? null,
       status: "paid",
     });
@@ -104,7 +110,7 @@ const paymentSchema = z.object({
   itemName: z.string().min(1).max(120),
   amountPi: z.number().min(0).max(1000000),
   guestName: z.string().max(80).optional(),
-  paymentId: z.string().max(200).optional(),
+  paymentId: z.string().min(1).max(200),
   txid: z.string().max(200).optional(),
 });
 
@@ -113,6 +119,12 @@ export const recordPiPayment = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => paymentSchema.parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { verifyPiPayment, paymentAlreadyUsed } = await import("./pi-verify.server");
+    if (await paymentAlreadyUsed("bookings", data.paymentId)) {
+      return { ok: false as const, message: "This payment was already used." };
+    }
+    const verified = await verifyPiPayment(data.paymentId, data.amountPi);
+    if (!verified.ok) return { ok: false as const, message: verified.reason };
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let suffix = "";
     for (let i = 0; i < 4; i++) suffix += chars[Math.floor(Math.random() * chars.length)];
@@ -128,8 +140,8 @@ export const recordPiPayment = createServerFn({ method: "POST" })
       room: data.itemName,
       price_per_night: data.amountPi,
       total_pi: data.amountPi,
-      payment_id: data.paymentId ?? null,
-      txid: data.txid ?? null,
+      payment_id: data.paymentId,
+      txid: verified.txid,
       notes: `${data.kind} payment`,
       status: "paid",
     });
