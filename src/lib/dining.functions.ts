@@ -9,7 +9,7 @@ const orderSchema = z.object({
   guestRoom: z.string().min(1).max(60),
   guestName: z.string().max(80).optional(),
   totalPi: z.number().min(0).max(1000000),
-  paymentId: z.string().max(200).optional(),
+  paymentId: z.string().min(1).max(200),
   txid: z.string().max(200).optional(),
 });
 
@@ -18,14 +18,20 @@ export const createDiningOrder = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => orderSchema.parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { verifyPiPayment, paymentAlreadyUsed } = await import("./pi-verify.server");
+    if (await paymentAlreadyUsed("dining_orders", data.paymentId)) {
+      return { ok: false as const, message: "This payment was already used." };
+    }
+    const verified = await verifyPiPayment(data.paymentId, data.totalPi);
+    if (!verified.ok) return { ok: false as const, message: verified.reason };
     const { error } = await supabaseAdmin.from("dining_orders").insert({
       item_name: data.itemName,
       quantity: data.quantity,
       guest_room: data.guestRoom.trim(),
       guest_name: data.guestName?.trim() || null,
       total_pi: data.totalPi,
-      payment_id: data.paymentId ?? null,
-      txid: data.txid ?? null,
+      payment_id: data.paymentId,
+      txid: verified.txid,
       status: "Pending",
     });
     if (error) {

@@ -105,7 +105,7 @@ function Index() {
           itemName,
           amountPi,
           guestName: piUser ? `@${piUser.username}` : undefined,
-          paymentId: res?.paymentId,
+          paymentId: res?.paymentId ?? "",
           txid: res?.txid,
         },
       });
@@ -166,7 +166,7 @@ function Index() {
             guestRoom,
             guestName: piUser ? `@${piUser.username}` : undefined,
             totalPi: amount,
-            paymentId: res?.paymentId,
+            paymentId: res?.paymentId ?? "",
             txid: res?.txid,
           },
         });
@@ -1171,7 +1171,7 @@ function BookingForm() {
             room,
             pricePerNight: PI_PER_NIGHT,
             totalPi: amount,
-            paymentId: res?.paymentId,
+            paymentId: res?.paymentId ?? "",
             txid: res?.txid,
             notes: notes.trim().slice(0, 500) || undefined,
           },
