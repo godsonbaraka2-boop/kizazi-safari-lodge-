@@ -200,3 +200,22 @@ export const updateBookingStatus = createServerFn({ method: "POST" })
     }
     return { ok: true as const };
   });
+
+/** Public: names of rooms occupied today by a paid booking (no guest details). */
+export const listOccupiedRooms = createServerFn({ method: "POST" }).handler(async () => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const today = new Date().toISOString().slice(0, 10);
+  const { data, error } = await supabaseAdmin
+    .from("bookings")
+    .select("room")
+    .in("status", BLOCKING_STATUSES as unknown as string[])
+    .gt("nights", 0)
+    .lte("check_in", today)
+    .gt("check_out", today)
+    .limit(200);
+  if (error) {
+    console.error("listOccupiedRooms failed", error.message);
+    return { rooms: [] as string[] };
+  }
+  return { rooms: Array.from(new Set((data ?? []).map((r) => r.room))) };
+});

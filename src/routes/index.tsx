@@ -6,7 +6,7 @@ import PhoneInput, { isValidPhoneNumber, type Value } from "react-phone-number-i
 import { LanguageSwitcher, useT } from "@/lib/i18n";
 import { usePiAuth } from "@/lib/use-pi-auth";
 import { usePiPayment } from "@/lib/use-pi-payment";
-import { saveBooking, recordPiPayment, checkRoomAvailability } from "@/lib/bookings.functions";
+import { saveBooking, recordPiPayment, checkRoomAvailability, listOccupiedRooms } from "@/lib/bookings.functions";
 import { createDiningOrder } from "@/lib/dining.functions";
 import heroImg from "@/assets/hero.jpg";
 import roomSavannah from "@/assets/room-savannah.jpg";
@@ -86,7 +86,6 @@ function Index() {
   const { t } = useT();
   const { user: piUser, loading: piLoading, signIn: piSignIn, signOut: piSignOut } = usePiAuth();
   const { pay: piPay, paying: piPaying } = usePiPayment();
-  const [payingRoom, setPayingRoom] = useState<string | null>(null);
   const [payingItem, setPayingItem] = useState<string | null>(null);
   const [payingTour, setPayingTour] = useState<string | null>(null);
   const logPayment = useServerFn(recordPiPayment);
@@ -187,27 +186,14 @@ function Index() {
   };
 
 
-  const handleRoomPay = async (room: { name: string; piAmount: number }) => {
-    setPayingRoom(room.name);
-    try {
-      const res = await piPay({
-        amount: room.piAmount,
-        memo: `Kizazi Lodge — ${room.name} (1 night)`,
-        metadata: { kind: "room_booking", room: room.name },
-      });
-      await savePaymentRecord("room", room.name, room.piAmount, res);
-      window.open(
-        wa(
-          `Hello, I just paid ${room.piAmount} π for the ${room.name} via Pi Network. Payment ID: ${res.paymentId}, txid: ${res.txid}. Please confirm my booking.`,
-        ),
-        "_blank",
-      );
-    } catch {
-      /* surfaced via hook error */
-    } finally {
-      setPayingRoom(null);
-    }
-  };
+  const [bookRoom, setBookRoom] = useState<string | null>(null);
+  const [occupied, setOccupied] = useState<string[]>([]);
+  const fetchOccupied = useServerFn(listOccupiedRooms);
+  useEffect(() => {
+    fetchOccupied()
+      .then((r) => setOccupied(r.rooms))
+      .catch(() => setOccupied([]));
+  }, [fetchOccupied, bookRoom]);
   return (
     <div className="min-h-screen bg-sand-50 text-earth-900 font-sans selection:bg-savannah/20">
       {/* Header */}
@@ -345,6 +331,12 @@ function Index() {
         <div className="max-w-3xl mx-auto grid md:grid-cols-2 gap-10">
           {ROOMS.map((r) => (
             <article key={r.name} className="group">
+              <div className="relative">
+              {occupied.includes(r.name) && (
+                <span className="absolute top-3 left-3 z-10 rounded-full bg-destructive text-destructive-foreground px-3 py-1 text-[10px] font-bold uppercase tracking-widest shadow">
+                  ● Paid · Occupied today
+                </span>
+              )}
               <img
                 src={r.img}
                 alt={r.alt}
@@ -353,6 +345,7 @@ function Index() {
                 height={1280}
                 className="w-full aspect-[4/5] object-cover rounded-2xl mb-4 bg-sand-100"
               />
+              </div>
               <div className="flex justify-between items-start mb-2 gap-3">
                 <h3 className="text-xl font-bold">{r.name}</h3>
                 <div className="font-mono text-sm bg-sand-100 px-2 py-1 whitespace-nowrap">
@@ -374,17 +367,44 @@ function Index() {
                 </a>
                 <button
                   type="button"
-                  onClick={() => void handleRoomPay(r)}
-                  disabled={piPaying && payingRoom === r.name}
-                  className="py-4 rounded-xl font-medium text-sm bg-savannah text-white hover:bg-savannah/90 transition-colors disabled:opacity-60"
+                  onClick={() => setBookRoom(r.name)}
+                  className="py-4 rounded-xl font-medium text-sm bg-savannah text-white hover:bg-savannah/90 transition-colors"
                 >
-                  {piPaying && payingRoom === r.name ? "…" : `${t("rooms.pay")} ${r.piAmount} π`}
+                  {`${t("rooms.pay")} ${r.piAmount} π`}
                 </button>
               </div>
             </article>
           ))}
         </div>
       </section>
+
+      {bookRoom && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Book ${bookRoom}`}
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-earth-900/70 backdrop-blur-sm p-0 sm:p-6"
+        >
+          <div className="w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-earth-900 p-6 shadow-2xl">
+            <div className="flex items-start justify-between gap-4 mb-5">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-savannah">Book your stay</p>
+                <h3 className="text-2xl font-display italic text-white">{bookRoom}</h3>
+                <p className="text-xs text-white/60 mt-1">Choose your check-in and check-out dates before paying.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setBookRoom(null)}
+                aria-label="Close"
+                className="text-white/60 hover:text-white text-2xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+            <BookingForm key={bookRoom} initialRoom={bookRoom} />
+          </div>
+        </div>
+      )}
 
       {/* Lodge office and kitchen */}
       <section aria-labelledby="lodge-operations-title" className="bg-earth-900 text-white">
@@ -1053,7 +1073,7 @@ const FACILITIES = [
   },
 ];
 
-function BookingForm() {
+function BookingForm({ initialRoom }: { initialRoom?: string } = {}) {
   const { pay: piPay, paying, error: piError } = usePiPayment();
   const storeBooking = useServerFn(saveBooking);
   const [name, setName] = useState("");
@@ -1061,10 +1081,11 @@ function BookingForm() {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [guests, setGuests] = useState(2);
-  const [room, setRoom] = useState(ROOMS[0].name);
+  const [room, setRoom] = useState(initialRoom ?? ROOMS[0].name);
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
+  const [paidRef, setPaidRef] = useState<string>("");
   const [taken, setTaken] = useState<string | null>(null);
   const [checkingAvail, setCheckingAvail] = useState(false);
 
@@ -1159,7 +1180,7 @@ function BookingForm() {
       });
       const code = makeCode();
       try {
-        await storeBooking({
+        const saved = await storeBooking({
           data: {
             confirmationCode: code,
             guestName: trimmedName,
@@ -1176,9 +1197,21 @@ function BookingForm() {
             notes: notes.trim().slice(0, 500) || undefined,
           },
         });
+        if (!saved.ok) {
+          return setError(
+            ("message" in saved && saved.message) ||
+              "Payment received but the booking could not be saved. Please contact us on WhatsApp with your payment ID: " +
+                res.paymentId,
+          );
+        }
       } catch (err) {
         console.error("Could not save booking", err);
+        return setError(
+          "Payment received but the booking could not be saved. Please contact us on WhatsApp with your payment ID: " +
+            res.paymentId,
+        );
       }
+      setPaidRef(res.paymentId);
       setConfirmation(code);
     } catch {
       /* error surfaced via piError */
@@ -1190,41 +1223,73 @@ function BookingForm() {
   const label = "block text-[10px] font-bold uppercase tracking-widest text-white/60 mb-2";
 
   if (confirmation) {
+    const issued = new Date().toLocaleString();
     const waMsg =
-      `*NEW BOOKING — KIZAZI SAFARI LODGE*\n\n` +
-      `Confirmation Code: ${confirmation}\n` +
-      `Guest Name: ${name}\n` +
+      `*KIZAZI SAFARI LODGE — PAYMENT RECEIPT*\n\n` +
+      `Booking Code: ${confirmation}\n` +
+      `Guest: ${name}\n` +
       `Phone: ${phone ?? ""}\n` +
       `Room: ${room}\n` +
       `Check-in: ${checkIn}\n` +
       `Check-out: ${checkOut}\n` +
-      `Nights: ${nights}\n` +
-      `Guests: ${guests}\n` +
-      `Total Paid: ${total} π\n\n` +
-      `Payment completed via Pi Network. Please confirm my reservation.`;
+      `Nights: ${nights} · Guests: ${guests}\n` +
+      `Rate: ${PI_PER_NIGHT} π / night\n` +
+      `Total Paid: ${total} π\n` +
+      `Pi Payment ID: ${paidRef}\n` +
+      `Issued: ${issued}\n\n` +
+      `Status: PAID ✅ (verified with Pi Network)`;
+    const rows: [string, string][] = [
+      ["Guest", name],
+      ["Phone", String(phone ?? "")],
+      ["Room", room],
+      ["Check-in", checkIn],
+      ["Check-out", checkOut],
+      ["Nights / Guests", `${nights} / ${guests}`],
+      ["Rate", `${PI_PER_NIGHT} π / night`],
+      ["Pi Payment ID", paidRef],
+      ["Issued", issued],
+    ];
     return (
-      <div className="bg-white/5 border border-white/15 rounded-2xl p-8 text-center space-y-4">
-        <div className="text-4xl">🎉</div>
-        <h3 className="text-2xl font-display italic text-white">Booking Confirmed!</h3>
-        <p className="text-white/70 text-sm">Your confirmation code:</p>
-        <p className="text-2xl font-mono font-bold text-purple-300 tracking-widest">
-          {confirmation}
-        </p>
-        <p className="text-white/50 text-xs">
-          Keep this code safe. We'll be in touch on {phone} shortly.
-        </p>
+      <div className="bg-sand-50 text-earth-900 rounded-2xl p-6 space-y-4" aria-label="Payment receipt">
+        <div className="text-center border-b border-dashed border-earth-900/20 pb-4">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-earth-900/50">Kizazi Safari Lodge</p>
+          <h3 className="text-2xl font-display italic">Payment Receipt</h3>
+          <p className="mt-2 text-xs font-bold uppercase tracking-widest text-savannah">● Paid</p>
+          <p className="mt-2 text-sm">Booking Confirmed! Code:</p>
+          <p className="text-2xl font-mono font-bold tracking-widest">{confirmation}</p>
+        </div>
+        <dl className="space-y-2 text-sm">
+          {rows.map(([k, v]) => (
+            <div key={k} className="flex justify-between gap-4">
+              <dt className="text-earth-900/60">{k}</dt>
+              <dd className="font-medium text-right break-all">{v}</dd>
+            </div>
+          ))}
+        </dl>
+        <div className="flex justify-between border-t border-dashed border-earth-900/20 pt-3 text-base font-bold">
+          <span>Total paid</span>
+          <span>{total} π</span>
+        </div>
         <a
           href={wa(waMsg)}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-block w-full bg-[#25D366] hover:bg-[#1ebe57] text-white py-4 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors"
+          className="block w-full text-center bg-[#25D366] hover:bg-[#1ebe57] text-white py-4 rounded-xl font-bold uppercase text-xs tracking-widest transition-colors"
         >
-          NITUMIE WHATSAPP
+          Send receipt to the lodge on WhatsApp
         </a>
+        <a
+          href={`https://wa.me/?text=${encodeURIComponent(waMsg)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full text-center border border-earth-900/20 py-3 rounded-xl font-bold uppercase text-[11px] tracking-widest"
+        >
+          Share receipt on WhatsApp
+        </a>
+        <p className="text-[11px] text-center text-earth-900/50">Show this code at check-in.</p>
       </div>
     );
   }
-
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
