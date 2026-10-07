@@ -21,7 +21,7 @@ const bookingSchema = z.object({
 const BLOCKING_STATUSES = ["confirmed", "paid", "checked-in"] as const;
 
 export const ROOM_TAKEN_MESSAGE =
-  "Chumba hiki kimeshachukuliwa kwenye tarehe ulizochagua. Tafadhali chagua tarehe nyingine au chumba kingine.";
+  "This room is already booked for your selected dates. Please choose different dates or another room.";
 
 const availabilitySchema = z.object({
   room: z.string().min(1).max(120),
