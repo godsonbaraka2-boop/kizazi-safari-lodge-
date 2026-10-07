@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_login_attempts: {
+        Row: {
+          client_key: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          client_key: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          client_key?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       app_secrets: {
         Row: {
           created_at: string
