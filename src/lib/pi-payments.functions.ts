@@ -37,6 +37,10 @@ export const approvePiPayment = createServerFn({ method: "POST" })
     return { paymentId: input.paymentId };
   })
   .handler(async ({ data }) => {
+    // Refuse to approve if the amount is below the official price or the room is taken.
+    const { checkPaymentBeforeApproval } = await import("./pi-approval.server");
+    const check = await checkPaymentBeforeApproval(data.paymentId);
+    if (!check.ok) throw new Error(check.reason);
     await piRequest(`/payments/${encodeURIComponent(data.paymentId)}/approve`);
     return { ok: true as const };
   });
