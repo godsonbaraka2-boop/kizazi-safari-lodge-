@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { KITCHEN_STATUSES, listDiningOrders, updateDiningOrderStatus } from "@/lib/dining.functions";
 import { listBookings, updateBookingStatus } from "@/lib/bookings.functions";
 import {
   activateWallets,
@@ -87,6 +88,18 @@ function Admin() {
   const saveKeys = useServerFn(saveWalletSecrets);
   const checkKeys = useServerFn(getWalletSecretStatus);
   const [passcode, setPasscode] = useState("");
+  const fetchOrders = useServerFn(listDiningOrders);
+  const setOrderStatus = useServerFn(updateDiningOrderStatus);
+  type Order = { id: string; item_name: string; quantity: number; guest_room: string; guest_name: string | null; total_pi: number; status: string; created_at: string };
+  const [orders, setOrders] = useState<Order[]>([]);
+  const loadOrders = async (code: string) => {
+    try {
+      const r = await fetchOrders({ data: { passcode: code } });
+      if (r.ok) setOrders(r.orders as Order[]);
+    } catch {
+      /* keep last list */
+    }
+  };
   const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -257,11 +270,12 @@ function Admin() {
     try {
       const res = await fetchBookings({ data: { passcode: code } });
       if (!res.ok) {
-        setError("Wrong passcode.");
+        setError(("error" in res && res.error) || "Wrong passcode.");
         setBookings(null);
       } else {
         setBookings(res.bookings as Booking[]);
         void refreshKeyStatus(code);
+        void loadOrders(code);
       }
     } catch {
       setError("Could not load bookings. Please try again.");
@@ -269,6 +283,14 @@ function Admin() {
       setLoading(false);
     }
   };
+
+  const signedIn = bookings !== null;
+  useEffect(() => {
+    if (!signedIn) return;
+    const t = setInterval(() => void loadOrders(passcode.trim()), 15000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signedIn]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -432,6 +454,52 @@ function Admin() {
             </div>
 
             {error && <p className="text-red-300 text-xs">{error}</p>}
+
+            <section className="bg-white/5 border border-white/15 rounded-2xl p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-savannah">Kitchen</p>
+                  <h2 className="text-xl font-display italic">Food orders (last 36 hours)</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void loadOrders(passcode.trim())}
+                  className="text-xs uppercase tracking-widest border border-white/20 rounded-xl px-4 py-2 hover:bg-white/10"
+                >
+                  Refresh
+                </button>
+              </div>
+              {orders.length === 0 ? (
+                <p className="text-white/50 text-sm">No food orders yet.</p>
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {orders.map((o) => (
+                    <div key={o.id} className="border border-white/15 rounded-xl p-4 space-y-2">
+                      <p className="font-bold">{o.quantity} × {o.item_name}</p>
+                      <p className="text-xs text-white/60">
+                        Room: {o.guest_room}{o.guest_name ? ` · ${o.guest_name}` : ""}
+                      </p>
+                      <p className="text-xs text-white/40">
+                        {new Date(o.created_at).toLocaleString()} · {Number(o.total_pi)} π
+                      </p>
+                      <select
+                        value={o.status}
+                        onChange={async (e) => {
+                          const status = e.target.value as (typeof KITCHEN_STATUSES)[number];
+                          const r = await setOrderStatus({ data: { passcode: passcode.trim(), id: o.id, status } });
+                          if (r.ok) setOrders((prev) => prev.map((x) => (x.id === o.id ? { ...x, status } : x)));
+                        }}
+                        className="w-full bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-sm"
+                      >
+                        {KITCHEN_STATUSES.map((st) => (
+                          <option className="bg-earth-900" key={st} value={st}>{st}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
 
             <section className="bg-white/5 border border-white/15 rounded-2xl p-6 space-y-3">
               <div className="space-y-1">

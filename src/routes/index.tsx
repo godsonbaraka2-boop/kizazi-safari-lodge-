@@ -76,9 +76,7 @@ const WA = "255654617865";
 const wa = (msg: string) => `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`;
 
 // Pi Network pricing: Global Consensus Value (GCV) benchmark
-const PI_GCV_USD = 314159;
-const toPiAmount = (usd: number) =>
-  Number((usd / PI_GCV_USD).toPrecision(3));
+import { toPiAmount } from "@/lib/prices";
 const toPi = (usd: number) =>
   `${toPiAmount(usd).toLocaleString("en-US", { maximumSignificantDigits: 3 })} π`;
 
@@ -96,6 +94,7 @@ function Index() {
     itemName: string,
     amountPi: number,
     res: { paymentId?: string; txid?: string },
+    quantity?: number,
   ) => {
     try {
       await logPayment({
@@ -103,6 +102,7 @@ function Index() {
           kind,
           itemName,
           amountPi,
+          quantity,
           guestName: piUser ? `@${piUser.username}` : undefined,
           paymentId: res?.paymentId ?? "",
           txid: res?.txid,
@@ -156,7 +156,7 @@ function Index() {
         memo: `Kizazi Lodge — ${item.name} x${quantity}`,
         metadata: { kind: "food_order", item: item.name, quantity, room: guestRoom },
       });
-      await savePaymentRecord("food", item.name, amount, res);
+      await savePaymentRecord("food", item.name, amount, res, quantity);
       try {
         await sendToKitchen({
           data: {
