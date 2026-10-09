@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { foodTotal } from "./prices";
 
 export const KITCHEN_STATUSES = ["Pending", "Cooking", "Ready", "Delivered"] as const;
 
@@ -22,14 +23,16 @@ export const createDiningOrder = createServerFn({ method: "POST" })
     if (await paymentAlreadyUsed("dining_orders", data.paymentId)) {
       return { ok: false as const, message: "This payment was already used." };
     }
-    const verified = await verifyPiPayment(data.paymentId, data.totalPi);
+    const totalPi = foodTotal(data.itemName, data.quantity);
+    if (totalPi === null) return { ok: false as const, message: "Unknown menu item." };
+    const verified = await verifyPiPayment(data.paymentId, totalPi);
     if (!verified.ok) return { ok: false as const, message: verified.reason };
     const { error } = await supabaseAdmin.from("dining_orders").insert({
       item_name: data.itemName,
       quantity: data.quantity,
       guest_room: data.guestRoom.trim(),
       guest_name: data.guestName?.trim() || null,
-      total_pi: data.totalPi,
+      total_pi: totalPi,
       payment_id: data.paymentId,
       txid: verified.txid,
       status: "Pending",
@@ -47,10 +50,9 @@ export const listDiningOrders = createServerFn({ method: "POST" })
     z.object({ passcode: z.string().min(1).max(200) }).parse(input),
   )
   .handler(async ({ data }) => {
-    const expected = process.env["ADMIN_PASSCODE"];
-    if (!expected || data.passcode !== expected) {
-      return { ok: false as const, orders: [] };
-    }
+    const { verifyAdmin } = await import("./admin-auth.server");
+    const auth = await verifyAdmin(data.passcode);
+    if (!auth.ok) return { ok: false as const, error: auth.error, orders: [] };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const since = new Date(Date.now() - 36 * 3600 * 1000).toISOString();
     const { data: rows, error } = await supabaseAdmin
@@ -80,10 +82,8 @@ export const updateDiningOrderStatus = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    const expected = process.env["ADMIN_PASSCODE"];
-    if (!expected || data.passcode !== expected) {
-      return { ok: false as const };
-    }
+    const { verifyAdmin } = await import("./admin-auth.server");
+    if (!(await verifyAdmin(data.passcode)).ok) return { ok: false as const };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("dining_orders")

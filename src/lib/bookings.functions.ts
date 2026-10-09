@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { roomPricePerNight, roomTotal, foodTotal, tourPrice, nightsBetween } from "./prices";
 
 const bookingSchema = z.object({
   confirmationCode: z.string().min(3).max(20),
@@ -74,7 +75,14 @@ export const saveBooking = createServerFn({ method: "POST" })
     if (await paymentAlreadyUsed("bookings", data.paymentId)) {
       return { ok: false as const, message: "This payment was already used." };
     }
-    const verified = await verifyPiPayment(data.paymentId, data.totalPi);
+    // Price is decided by the server, never by the browser.
+    const nights = nightsBetween(data.checkIn, data.checkOut);
+    const pricePerNight = roomPricePerNight(data.room);
+    const totalPi = roomTotal(data.room, nights);
+    if (nights < 1 || pricePerNight === null || totalPi === null) {
+      return { ok: false as const, message: "Invalid room or dates." };
+    }
+    const verified = await verifyPiPayment(data.paymentId, totalPi);
     if (!verified.ok) return { ok: false as const, message: verified.reason };
     // Server-side double-booking guard (authoritative).
     const conflicts = await findConflicts(data.room, data.checkIn, data.checkOut);
@@ -88,11 +96,11 @@ export const saveBooking = createServerFn({ method: "POST" })
       phone: data.phone,
       check_in: data.checkIn,
       check_out: data.checkOut,
-      nights: data.nights,
+      nights,
       guests: data.guests,
       room: data.room,
-      price_per_night: data.pricePerNight,
-      total_pi: data.totalPi,
+      price_per_night: pricePerNight,
+      total_pi: totalPi,
       payment_id: data.paymentId,
       txid: verified.txid,
       notes: data.notes ?? null,
@@ -100,6 +108,9 @@ export const saveBooking = createServerFn({ method: "POST" })
     });
     if (error) {
       console.error("saveBooking failed", error.message);
+      if (error.code === "23P01") {
+        return { ok: false as const, conflict: true as const, message: ROOM_TAKEN_MESSAGE };
+      }
       return { ok: false as const };
     }
     return { ok: true as const };
@@ -108,7 +119,8 @@ export const saveBooking = createServerFn({ method: "POST" })
 const paymentSchema = z.object({
   kind: z.enum(["room", "food", "tour"]),
   itemName: z.string().min(1).max(120),
-  amountPi: z.number().min(0).max(1000000),
+  amountPi: z.number().min(0).max(1000000).optional(),
+  quantity: z.number().int().min(1).max(50).optional(),
   guestName: z.string().max(80).optional(),
   paymentId: z.string().min(1).max(200),
   txid: z.string().max(200).optional(),
@@ -123,7 +135,14 @@ export const recordPiPayment = createServerFn({ method: "POST" })
     if (await paymentAlreadyUsed("bookings", data.paymentId)) {
       return { ok: false as const, message: "This payment was already used." };
     }
-    const verified = await verifyPiPayment(data.paymentId, data.amountPi);
+    const expected =
+      data.kind === "room"
+        ? roomPricePerNight(data.itemName)
+        : data.kind === "food"
+          ? foodTotal(data.itemName, data.quantity ?? 1)
+          : tourPrice(data.itemName);
+    if (expected === null) return { ok: false as const, message: "Unknown item." };
+    const verified = await verifyPiPayment(data.paymentId, expected);
     if (!verified.ok) return { ok: false as const, message: verified.reason };
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let suffix = "";
@@ -138,8 +157,8 @@ export const recordPiPayment = createServerFn({ method: "POST" })
       nights: 0,
       guests: 1,
       room: data.itemName,
-      price_per_night: data.amountPi,
-      total_pi: data.amountPi,
+      price_per_night: expected,
+      total_pi: expected,
       payment_id: data.paymentId,
       txid: verified.txid,
       notes: `${data.kind} payment`,
@@ -155,10 +174,9 @@ export const recordPiPayment = createServerFn({ method: "POST" })
 export const listBookings = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ passcode: z.string().min(1).max(200) }).parse(input))
   .handler(async ({ data }) => {
-    const expected = process.env["ADMIN_PASSCODE"];
-    if (!expected || data.passcode !== expected) {
-      return { ok: false as const, bookings: [] };
-    }
+    const { verifyAdmin } = await import("./admin-auth.server");
+    const auth = await verifyAdmin(data.passcode);
+    if (!auth.ok) return { ok: false as const, error: auth.error, bookings: [] };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows, error } = await supabaseAdmin
       .from("bookings")
@@ -185,10 +203,8 @@ export const updateBookingStatus = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    const expected = process.env["ADMIN_PASSCODE"];
-    if (!expected || data.passcode !== expected) {
-      return { ok: false as const };
-    }
+    const { verifyAdmin } = await import("./admin-auth.server");
+    if (!(await verifyAdmin(data.passcode)).ok) return { ok: false as const };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("bookings")

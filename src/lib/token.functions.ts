@@ -79,9 +79,9 @@ async function readWalletSecret(name: "PI_ISSUER_SECRET" | "PI_DISTRIBUTOR_SECRE
   return process.env[name] ?? null;
 }
 
-function checkPasscode(passcode: string) {
-  const expected = process.env["ADMIN_PASSCODE"];
-  return Boolean(expected) && passcode === expected;
+async function checkPasscode(passcode: string) {
+  const { verifyAdmin } = await import("./admin-auth.server");
+  return (await verifyAdmin(passcode)).ok;
 }
 
 const secretKeySchema = z
@@ -135,7 +135,7 @@ export const saveWalletSecrets = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    if (!checkPasscode(data.passcode)) {
+    if (!await checkPasscode(data.passcode)) {
       return { ok: false as const, error: "Wrong admin passcode." };
     }
 
@@ -166,7 +166,7 @@ export const saveWalletSecrets = createServerFn({ method: "POST" })
 export const getWalletSecretStatus = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ passcode: z.string().min(1).max(200) }).parse(input))
   .handler(async ({ data }) => {
-    if (!checkPasscode(data.passcode)) {
+    if (!await checkPasscode(data.passcode)) {
       return { ok: false as const, issuer: false, distributor: false };
     }
     const [issuer, distributor] = await Promise.all([
@@ -201,7 +201,7 @@ async function nativeBalance(publicKey: string) {
 export const getWalletFunding = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ passcode: z.string().min(1).max(200) }).parse(input))
   .handler(async ({ data }) => {
-    if (!checkPasscode(data.passcode)) {
+    if (!await checkPasscode(data.passcode)) {
       return { ok: false as const, error: "Wrong admin passcode." };
     }
     const [issuerSecret, distributorSecret] = await Promise.all([
@@ -275,7 +275,7 @@ export const mintKizaziToken = createServerFn({ method: "POST" })
     z.object({ passcode: z.string().min(1).max(200) }).parse(input),
   )
   .handler(async ({ data }) => {
-    if (!checkPasscode(data.passcode)) {
+    if (!await checkPasscode(data.passcode)) {
       return { ok: false as const, error: "Wrong admin passcode." };
     }
 
@@ -399,7 +399,7 @@ export const activateWallets = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    if (!checkPasscode(data.passcode)) {
+    if (!await checkPasscode(data.passcode)) {
       return { ok: false as const, error: "Wrong admin passcode." };
     }
 
@@ -514,7 +514,7 @@ export const setIssuerHomeDomain = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    if (!checkPasscode(data.passcode)) {
+    if (!await checkPasscode(data.passcode)) {
       return { ok: false as const, error: "Wrong admin passcode." };
     }
     const issuerSecret = await readWalletSecret("PI_ISSUER_SECRET");
