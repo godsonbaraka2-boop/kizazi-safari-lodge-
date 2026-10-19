@@ -7,7 +7,7 @@ import { LanguageSwitcher, useT } from "@/lib/i18n";
 import { usePiAuth } from "@/lib/use-pi-auth";
 import { usePiPayment } from "@/lib/use-pi-payment";
 import { saveBooking, recordPiPayment, checkRoomAvailability, listOccupiedRooms } from "@/lib/bookings.functions";
-import { createDiningOrder } from "@/lib/dining.functions";
+import { createDiningOrder } from "@/lib/dining.functions";import { PiAdBanner } from "@/components/PiAdBanner";
 import heroImg from "@/assets/hero.jpg";
 import roomSavannah from "@/assets/room-savannah.jpg";
 import roomAcacia from "@/assets/room-acacia.jpg";
@@ -540,6 +540,8 @@ function Index() {
           </p>
         </div>
 
+
+<PiAdBanner />
 
         <div className="max-w-5xl mx-auto">
           {MENU.map((section) => (
