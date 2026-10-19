@@ -15,6 +15,7 @@ import roomKilimanjaro from "@/assets/room-kilimanjaro.jpg";
 import roomManyara from "@/assets/room-manyara.jpg";
 import roomNgorongoro from "@/assets/room-ngorongoro.jpg";
 import lodgeMainBuilding from "@/assets/lodge-main-building.jpg";
+import { PiAdBanner } from "@/components/PiAdBanner";
 import tourDrive from "@/assets/tour-drive.jpg";
 import tourBalloon from "@/assets/tour-balloon.jpg";
 import foodMshikaki from "@/assets/food-mshikaki.jpg";
@@ -295,7 +296,7 @@ function Index() {
           </p>
         </div>
       </section>
-
+      <PiAdBanner />
       {/* Rooms */}
       {/* Booking form — placed right after the lodge showcase, above the rooms */}
       <section id="book" className="px-6 py-20 bg-earth-900 text-white scroll-mt-20">
