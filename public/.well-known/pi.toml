@@ -1,14 +1,14 @@
 VERSION="2.0.0"
-NETWORK_PASSPHRASE="Pi Testnet"
-HORIZON_URL="https://api.testnet.minepi.com"
+NETWORK_PASSPHRASE="Pi Mainnet"
+HORIZON_URL="https://api.mainnet.minepi.com"
 
 [DOCUMENTATION]
 ORG_NAME="Kizazi Safari Lodge"
 ORG_URL="https://kizazi-safari-lodge-4sib.vercel.app"
 ORG_LOGO="https://kizazi-safari-lodge-4sib.vercel.app/logo.png"
-ORG_DESCRIPTION="Safari lodge in Tanzania - Book with Pi"
+ORG_DESCRIPTION="Safari lodge in Tanzania - Book rooms, dining and safari tours with Pi"
 ORG_OFFICIAL_EMAIL="godsonbaraka2@gmail.com"
-ORG_PRIVACY_POLICY_URL="https://kizazi-safari-lodge-4sib.vercel.app/privacy"
+ORG_PRIVACY_POLICY_URL="https://kizazi-safari-lodge-4sib.vercel.app/privacy-policy"
 ORG_TERMS_URL="https://kizazi-safari-lodge-4sib.vercel.app/terms"
 ORG_REPOSITORY_URL="https://github.com/godsonbaraka2-boop/kizazi-safari-lodge-"
 ORG_CONTACT_EMAIL="godsonbaraka2@gmail.com"
@@ -20,7 +20,7 @@ issuer="GBFZSQ2RJ62K4CW7ZFMYXY5TVSMBB"
 display_decimals=7
 name="Kizazi Safari Token"
 desc="Utility token of Kizazi Safari Lodge"
-conditions="Fixed supply of 1,000,000"
+conditions="Fixed supply 1,000,000 KST"
 fixed_number=1000000000
 is_asset_anchored=false
-status="test"
+status="live"
