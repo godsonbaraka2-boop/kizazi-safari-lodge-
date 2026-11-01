@@ -7,7 +7,7 @@ import { LanguageSwitcher, useT } from "@/lib/i18n";
 import { usePiAuth } from "@/lib/use-pi-auth";
 import { usePiPayment } from "@/lib/use-pi-payment";
 import { saveBooking, recordPiPayment, checkRoomAvailability, listOccupiedRooms } from "@/lib/bookings.functions";
-import { createDiningOrder } from "@/lib/dining.functions";import { PiAdBanner } from "@/components/PiAdBanner";
+import { createDiningOrder } from "@/lib/dining.functions";
 import heroImg from "@/assets/hero.jpg";
 import roomSavannah from "@/assets/room-savannah.jpg";
 import roomAcacia from "@/assets/room-acacia.jpg";
@@ -65,9 +65,8 @@ export const Route = createFileRoute("/")({
         content:
           "Luxury tented suites, authentic cuisine and guided safaris. Booking via WhatsApp.",
       },
-      { property: "og:image", content: heroImg },
+      { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:image", content: heroImg },
     ],
   }),
   component: Index,
