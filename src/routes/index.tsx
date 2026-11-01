@@ -8,6 +8,7 @@ import { usePiAuth } from "@/lib/use-pi-auth";
 import { usePiPayment } from "@/lib/use-pi-payment";
 import { saveBooking, recordPiPayment, checkRoomAvailability, listOccupiedRooms } from "@/lib/bookings.functions";
 import { createDiningOrder } from "@/lib/dining.functions";
+import { DiningCheckout, type DiningDetails } from "@/components/DiningCheckout";
 import heroImg from "@/assets/hero.jpg";
 import roomSavannah from "@/assets/room-savannah.jpg";
 import roomAcacia from "@/assets/room-acacia.jpg";
@@ -88,6 +89,8 @@ function Index() {
   const [payingTour, setPayingTour] = useState<string | null>(null);
   const logPayment = useServerFn(recordPiPayment);
   const sendToKitchen = useServerFn(createDiningOrder);
+  const [diningItem, setDiningItem] = useState<{ name: string; piAmount: number } | null>(null);
+  const [diningError, setDiningError] = useState<string | null>(null);
 
   const savePaymentRecord = async (
     kind: "room" | "food" | "tour",
@@ -137,16 +140,9 @@ function Index() {
   };
 
 
-  const handleMenuPay = async (item: { name: string; piAmount: number }) => {
-    const roomAnswer = window.prompt(
-      `Which room should "${item.name}" be delivered to? (type Walk-in if you are not staying)`,
-      "Walk-in",
-    );
-    if (roomAnswer === null) return;
-    const guestRoom = roomAnswer.trim().slice(0, 60) || "Walk-in";
-    const qtyAnswer = window.prompt("How many portions?", "1");
-    if (qtyAnswer === null) return;
-    const quantity = Math.min(50, Math.max(1, parseInt(qtyAnswer, 10) || 1));
+  const handleMenuPay = async (item: { name: string; piAmount: number }, details: DiningDetails) => {
+    const { guestRoom, guestName, quantity } = details;
+    setDiningError(null);
     const amount = Number((item.piAmount * quantity).toPrecision(6));
 
     setPayingItem(item.name);
@@ -154,32 +150,36 @@ function Index() {
       const res = await piPay({
         amount,
         memo: `Kizazi Lodge — ${item.name} x${quantity}`,
-        metadata: { kind: "food_order", item: item.name, quantity, room: guestRoom },
+        metadata: { kind: "food_order", item: item.name, quantity, room: guestRoom, guestName },
       });
       await savePaymentRecord("food", item.name, amount, res, quantity);
       try {
-        await sendToKitchen({
+        const saved = await sendToKitchen({
           data: {
             itemName: item.name,
             quantity,
             guestRoom,
-            guestName: piUser ? `@${piUser.username}` : undefined,
+            guestName,
             totalPi: amount,
             paymentId: res?.paymentId ?? "",
             txid: res?.txid,
           },
         });
+        if (!saved.ok) throw new Error(saved.message ?? "The kitchen could not receive your order.");
       } catch (err) {
         console.error("Could not send order to kitchen", err);
+        setDiningError(`Payment received but the order could not be saved. Contact us with payment ID: ${res.paymentId}. Do not pay again.`);
+        return;
       }
       window.open(
         wa(
-          `Hello, I just paid ${amount} π for "${item.name}" x${quantity} (room: ${guestRoom}) via Pi Network. Payment ID: ${res.paymentId}, txid: ${res.txid}. The kitchen has my order.`,
+          `Hello, I'm ${guestName}. I just paid ${amount} π for "${item.name}" x${quantity} (room: ${guestRoom}) via Pi Network. Payment ID: ${res.paymentId}, txid: ${res.txid}. The kitchen has my order.`,
         ),
         "_blank",
       );
-    } catch {
-      /* surfaced via hook */
+      setDiningItem(null);
+    } catch (err) {
+      setDiningError(err instanceof Error ? err.message : "Payment failed. Please try again.");
     } finally {
       setPayingItem(null);
     }
@@ -196,6 +196,7 @@ function Index() {
   }, [fetchOccupied, bookRoom]);
   return (
     <div className="min-h-screen bg-sand-50 text-earth-900 font-sans selection:bg-savannah/20">
+      {diningItem && <DiningCheckout key={diningItem.name} item={diningItem} busy={payingItem !== null} error={diningError} onClose={() => setDiningItem(null)} onPay={(details) => handleMenuPay(diningItem, details)} />}
       {/* Header */}
       <header className="sticky top-0 z-40 bg-sand-50/80 backdrop-blur-md border-b border-earth-900/5 px-6 py-4 flex justify-between items-center gap-4">
         <div className="text-xl font-bold tracking-tighter uppercase font-display italic">
@@ -574,7 +575,7 @@ function Index() {
                       <p className="text-xs text-earth-900/60 mb-4 flex-1">{item.desc}</p>
                       <button
                         type="button"
-                        onClick={() => void handleMenuPay(item)}
+                        onClick={() => { setDiningError(null); setDiningItem(item); }}
                         disabled={piPaying && payingItem === item.name}
                         className="mt-auto w-full py-3 rounded-xl font-bold uppercase text-[11px] tracking-widest bg-savannah text-white hover:bg-savannah/90 transition-colors disabled:opacity-60"
                       >
@@ -1122,7 +1123,7 @@ function BookingForm({ initialRoom }: { initialRoom?: string } = {}) {
         setTaken(res.available ? null : (res.reason ?? "This room is not available."));
       })
       .catch(() => {
-        if (active) setTaken(null);
+        if (active) setTaken("Could not verify availability. Please try again.");
       })
       .finally(() => {
         if (active) setCheckingAvail(false);
@@ -1163,7 +1164,7 @@ function BookingForm({ initialRoom }: { initialRoom?: string } = {}) {
         return setError(avail.reason ?? "This room is not available.");
       }
     } catch {
-      /* network hiccup — server guard in saveBooking still protects us */
+      return setError("Could not verify availability. Please try again before paying.");
     }
     try {
       const res = await piPay({
