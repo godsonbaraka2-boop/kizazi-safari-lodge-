@@ -1,14 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { foodTotal } from "./prices";
+import { diningDetailsSchema } from "./dining-details";
 
 export const KITCHEN_STATUSES = ["Pending", "Cooking", "Ready", "Delivered"] as const;
 
-const orderSchema = z.object({
+const orderSchema = diningDetailsSchema.extend({
   itemName: z.string().min(1).max(120),
-  quantity: z.number().int().min(1).max(50),
-  guestRoom: z.string().min(1).max(60),
-  guestName: z.string().max(80).optional(),
   totalPi: z.number().min(0).max(1000000),
   paymentId: z.string().min(1).max(200),
   txid: z.string().max(200).optional(),

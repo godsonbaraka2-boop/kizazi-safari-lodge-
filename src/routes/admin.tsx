@@ -844,10 +844,7 @@ function Admin() {
           </>
         )}
       </div>
-            <div className="mt-12 border-t border-white/10 pt-8">
-        <h2 className="text-2xl font-bold text-white mb-4">💳 Pay Staff</h2>
-        <AdminPayment />
-      </div>
+      {signedIn && <AdminPayment passcode={passcode.trim()} />}
     </main>
   );
 }
