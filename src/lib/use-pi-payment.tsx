@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { approvePiPayment, completePiPayment } from "./pi-payments.functions";
 import { ensurePiReady } from "./pi-sdk";
+import { getPiAccessToken } from "./pi-session";
 
 export type PiPaymentInput = {
   amount: number;
@@ -33,7 +34,7 @@ export function usePiPayment() {
                 "Pi.createPayment unavailable. Open this app inside the Pi Browser.",
               );
             }
-            console.info("[Pi.pay] createPayment", input, window.location.origin);
+            const accessToken = getPiAccessToken();
             Pi.createPayment(
               {
                 amount: input.amount,
@@ -44,7 +45,7 @@ export function usePiPayment() {
                 onReadyForServerApproval: async (paymentId) => {
                   console.info("[Pi.pay] approving", paymentId);
                   try {
-                    await approve({ data: { paymentId } });
+                    await approve({ data: { paymentId, accessToken } });
                   } catch (e) {
                     reject(e);
                   }
@@ -52,7 +53,7 @@ export function usePiPayment() {
                 onReadyForServerCompletion: async (paymentId, txid) => {
                   console.info("[Pi.pay] completing", paymentId, txid);
                   try {
-                    await complete({ data: { paymentId, txid } });
+                    await complete({ data: { paymentId, txid, accessToken } });
                     resolve({ paymentId, txid });
                   } catch (e) {
                     reject(e);
