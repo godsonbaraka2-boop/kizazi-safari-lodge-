@@ -13,6 +13,7 @@ import {
 } from "@/lib/token.functions";
 
 import AdminPayment from "@/components/AdminPayment";
+import { csvCell } from "@/lib/csv";
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
@@ -74,7 +75,7 @@ function toCsv(rows: Booking[]) {
     "notes",
     "created_at",
   ] as const;
-  const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const esc = csvCell;
   return [
     headers.join(","),
     ...rows.map((r) => headers.map((h) => esc(r[h])).join(",")),
