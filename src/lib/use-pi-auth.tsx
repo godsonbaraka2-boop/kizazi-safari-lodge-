@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { verifyPiAccessToken, type PiUser } from "./pi-auth.functions";
 import { completePiPayment } from "./pi-payments.functions";
 import { ensurePiReady } from "./pi-sdk";
+import { setPiAccessToken } from "./pi-session";
 
 const STORAGE_KEY = "pi_auth_user";
 
@@ -29,18 +30,20 @@ export function usePiAuth() {
     try {
       const Pi = await ensurePiReady();
       console.info("[Pi.auth] authenticating", window.location.origin);
+      const incomplete: Array<{ identifier: string; txid: string }> = [];
       const auth = await Pi.authenticate(["payments", "username"], (payment) => {
         // An unfinished payment blocks new ones — finish it on the server.
         const p = payment as { identifier?: string; transaction?: { txid?: string } | null };
-        console.warn("[Pi.auth] incomplete payment found", p);
         if (p?.identifier && p.transaction?.txid) {
-          completeIncomplete({ data: { paymentId: p.identifier, txid: p.transaction.txid } })
-            .then(() => console.info("[Pi.auth] incomplete payment completed", p.identifier))
-            .catch((err) => console.error("[Pi.auth] failed to complete incomplete payment", err));
+          incomplete.push({ identifier: p.identifier, txid: p.transaction.txid });
         }
       });
       console.info("[Pi.auth] success", auth.user?.username);
       const verified = await verify({ data: { accessToken: auth.accessToken } });
+      setPiAccessToken(auth.accessToken);
+      for (const p of incomplete) {
+        await completeIncomplete({ data: { paymentId: p.identifier, txid: p.txid, accessToken: auth.accessToken } });
+      }
       setUser(verified);
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(verified));
@@ -56,9 +59,10 @@ export function usePiAuth() {
     } finally {
       setLoading(false);
     }
-  }, [verify]);
+  }, [verify, completeIncomplete]);
 
   const signOut = useCallback(() => {
+    setPiAccessToken(null);
     setUser(null);
     try {
       localStorage.removeItem(STORAGE_KEY);

@@ -13,22 +13,10 @@ export const verifyPiAccessToken = createServerFn({ method: "POST" })
     return { accessToken: input.accessToken };
   })
   .handler(async ({ data }): Promise<PiUser> => {
-    const res = await fetch("https://api.minepi.com/v2/me", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${data.accessToken}`,
-      },
-    });
-
-    if (!res.ok) {
-      const body = await res.text().catch(() => "");
-      console.error("Pi /v2/me validation failed", res.status, body);
-      throw new Error(`Pi token validation failed (${res.status})`);
-    }
-
-    const json = (await res.json()) as { uid?: string; username?: string };
-    if (!json.uid || !json.username) {
-      throw new Error("Pi /v2/me returned unexpected payload");
-    }
-    return { uid: json.uid, username: json.username };
+    const { verifyPiIdentity } = await import("./pi-identity.server");
+    const user = await verifyPiIdentity(data.accessToken);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("pi_users").upsert({ ...user, verified_at: new Date().toISOString() });
+    if (error) throw new Error("Could not save verified Pi account. Please try again.");
+    return user;
   });

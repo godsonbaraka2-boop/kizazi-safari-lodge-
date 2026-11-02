@@ -1,4 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { assertOwnedPayment, type OwnedPiPayment } from "./pi-payment-policy";
 
 const PI_API_BASE = "https://api.minepi.com/v2";
 
@@ -30,13 +32,13 @@ async function piRequest(path: string, body?: unknown) {
 }
 
 export const approvePiPayment = createServerFn({ method: "POST" })
-  .inputValidator((input: { paymentId: string }) => {
-    if (!input?.paymentId || typeof input.paymentId !== "string") {
-      throw new Error("paymentId is required");
-    }
-    return { paymentId: input.paymentId };
-  })
+  .inputValidator((input: unknown) => z.object({ paymentId: z.string().min(1).max(200), accessToken: z.string().min(8).max(4096) }).parse(input))
   .handler(async ({ data }) => {
+    const { verifyPiIdentity } = await import("./pi-identity.server");
+    const user = await verifyPiIdentity(data.accessToken);
+    const res = await fetch(`${PI_API_BASE}/payments/${encodeURIComponent(data.paymentId)}`, { headers: { Authorization: `Key ${getApiKey()}` } });
+    if (!res.ok) throw new Error("Payment not found.");
+    assertOwnedPayment(await res.json() as OwnedPiPayment, user.uid);
     // Refuse to approve if the amount is below the official price or the room is taken.
     const { checkPaymentBeforeApproval } = await import("./pi-approval.server");
     const check = await checkPaymentBeforeApproval(data.paymentId);
@@ -46,13 +48,13 @@ export const approvePiPayment = createServerFn({ method: "POST" })
   });
 
 export const completePiPayment = createServerFn({ method: "POST" })
-  .inputValidator((input: { paymentId: string; txid: string }) => {
-    if (!input?.paymentId || !input?.txid) {
-      throw new Error("paymentId and txid are required");
-    }
-    return { paymentId: input.paymentId, txid: input.txid };
-  })
+  .inputValidator((input: unknown) => z.object({ paymentId: z.string().min(1).max(200), txid: z.string().min(1).max(200), accessToken: z.string().min(8).max(4096) }).parse(input))
   .handler(async ({ data }) => {
+    const { verifyPiIdentity } = await import("./pi-identity.server");
+    const user = await verifyPiIdentity(data.accessToken);
+    const res = await fetch(`${PI_API_BASE}/payments/${encodeURIComponent(data.paymentId)}`, { headers: { Authorization: `Key ${getApiKey()}` } });
+    if (!res.ok) throw new Error("Payment not found.");
+    assertOwnedPayment(await res.json() as OwnedPiPayment, user.uid, data.txid);
     await piRequest(
       `/payments/${encodeURIComponent(data.paymentId)}/complete`,
       { txid: data.txid },

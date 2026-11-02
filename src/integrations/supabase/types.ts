@@ -155,6 +155,68 @@ export type Database = {
         }
         Relationships: []
       }
+      pi_rewards: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          payment_id: string | null
+          signed_xdr: string | null
+          status: string
+          txid: string | null
+          updated_at: string
+          user_uid: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id: string
+          payment_id?: string | null
+          signed_xdr?: string | null
+          status?: string
+          txid?: string | null
+          updated_at?: string
+          user_uid: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          payment_id?: string | null
+          signed_xdr?: string | null
+          status?: string
+          txid?: string | null
+          updated_at?: string
+          user_uid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pi_rewards_user_uid_fkey"
+            columns: ["user_uid"]
+            isOneToOne: false
+            referencedRelation: "pi_users"
+            referencedColumns: ["uid"]
+          },
+        ]
+      }
+      pi_users: {
+        Row: {
+          uid: string
+          username: string
+          verified_at: string
+        }
+        Insert: {
+          uid: string
+          username: string
+          verified_at?: string
+        }
+        Update: {
+          uid?: string
+          username?: string
+          verified_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
