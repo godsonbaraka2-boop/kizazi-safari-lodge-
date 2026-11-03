@@ -68,15 +68,5 @@
         }
       ]
     }
-  ],
-  "rewrites": [
-    {
-      "source": "/pi.toml",
-      "destination": "/.well-known/pi.toml"
-    },
-    {
-      "source": "/validation-key.txt",
-      "destination": "/.well-known/validation-key.txt"
-    }
   ]
 }

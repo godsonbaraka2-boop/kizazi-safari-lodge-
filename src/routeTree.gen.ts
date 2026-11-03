@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as PiDottomlRouteImport } from './routes/pi[.]toml'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as ValidationKeyDottxtRouteImport } from './routes/validation-key[.]txt'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,6 +24,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PiDottomlRoute = PiDottomlRouteImport.update({
+  id: '/pi.toml',
+  path: '/pi.toml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
@@ -34,39 +41,71 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ValidationKeyDottxtRoute = ValidationKeyDottxtRouteImport.update({
+  id: '/validation-key.txt',
+  path: '/validation-key.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/pi.toml': typeof PiDottomlRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/terms': typeof TermsRoute
+  '/validation-key.txt': typeof ValidationKeyDottxtRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/pi.toml': typeof PiDottomlRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/terms': typeof TermsRoute
+  '/validation-key.txt': typeof ValidationKeyDottxtRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/pi.toml': typeof PiDottomlRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/terms': typeof TermsRoute
+  '/validation-key.txt': typeof ValidationKeyDottxtRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/privacy-policy' | '/terms'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/pi.toml'
+    | '/privacy-policy'
+    | '/terms'
+    | '/validation-key.txt'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/privacy-policy' | '/terms'
-  id: '__root__' | '/' | '/admin' | '/privacy-policy' | '/terms'
+  to:
+    | '/'
+    | '/admin'
+    | '/pi.toml'
+    | '/privacy-policy'
+    | '/terms'
+    | '/validation-key.txt'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/pi.toml'
+    | '/privacy-policy'
+    | '/terms'
+    | '/validation-key.txt'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  PiDottomlRoute: typeof PiDottomlRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   TermsRoute: typeof TermsRoute
+  ValidationKeyDottxtRoute: typeof ValidationKeyDottxtRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -85,6 +124,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pi.toml': {
+      id: '/pi.toml'
+      path: '/pi.toml'
+      fullPath: '/pi.toml'
+      preLoaderRoute: typeof PiDottomlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy-policy': {
       id: '/privacy-policy'
       path: '/privacy-policy'
@@ -99,14 +145,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/validation-key.txt': {
+      id: '/validation-key.txt'
+      path: '/validation-key.txt'
+      fullPath: '/validation-key.txt'
+      preLoaderRoute: typeof ValidationKeyDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  PiDottomlRoute: PiDottomlRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   TermsRoute: TermsRoute,
+  ValidationKeyDottxtRoute: ValidationKeyDottxtRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
