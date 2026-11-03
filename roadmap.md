@@ -1,7 +1,7 @@
 # Tasks
 - [ ] Fix Pi payment ownership and CSV formula injection, then verify protections.
 - [ ] Add verified Pi usernames and admin-selected app-to-user payouts.
-- [ ] Deploy current changes to Vercel and check the live app.
+- [x] Deploy current changes to Vercel and check the live app.
 - [ ] Replace food prompts with walk-in/staying options and save guest details to admin.
 - [ ] Audit security, fix verified issues, and test protections.
 - [ ] Replace unsafe reward mock with verified Pi app-to-user rewards workflow.
