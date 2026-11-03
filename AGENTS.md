@@ -15,3 +15,4 @@
 - Kitchen orders are readable only via passcode-protected server functions; no public table access.
 - Pi approval/completion verify the bearer with Pi and match the payment owner; browser tokens stay in memory to prevent trusting cached identity.
 - Verified Pi identities and reward history are backend-only; reward payouts require admin verification, a dedicated app wallet, explicit Testnet checks, a globally serialized durable record, and identical-XDR reconciliation to avoid duplicate transfers.
+- Vercel deploys must be followed by `vercel alias set <deployment> kizazi-safari-lodge.vercel.app`; the domain belongs to another Vercel project, so `--prod` alone does not update it.
