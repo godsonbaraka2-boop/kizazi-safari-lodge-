@@ -39,7 +39,7 @@ export default function AdminPayment({ passcode }: { passcode: string }) {
     catch (e) { setError(e instanceof Error ? e.message : "Could not load users."); }
   }
   useEffect(() => { void refresh(); }, [passcode]);
-  const active = data?.rewards.find(r => r.status !== "completed");
+  const active = data?.rewards.find(r => r.status !== "completed" && r.status !== "dismissed");
   const selected = data?.users.find(u => u.uid === uid);
   async function payout(resume = false) {
     const recipient = resume && active ? active.user_uid : uid;
