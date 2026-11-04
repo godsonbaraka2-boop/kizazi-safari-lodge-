@@ -1,0 +1,2 @@
+alter table public.pi_rewards drop constraint pi_rewards_status_check;
+alter table public.pi_rewards add constraint pi_rewards_status_check check (status = any (array['pending','processing','completed','review','dismissed']));
