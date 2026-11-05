@@ -1,0 +1,1 @@
+ALTER TABLE public.pi_users ADD COLUMN IF NOT EXISTS wallet_permission_verified_at timestamptz, ADD COLUMN IF NOT EXISTS identity_source text NOT NULL DEFAULT 'authentication'; ALTER TABLE public.pi_rewards ADD COLUMN IF NOT EXISTS error_code text, ADD COLUMN IF NOT EXISTS error_message text;
