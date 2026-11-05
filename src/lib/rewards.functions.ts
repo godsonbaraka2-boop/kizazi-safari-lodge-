@@ -9,10 +9,19 @@ export const listRewardUsers = createServerFn({ method: "POST" })
     const check = await verifyAdmin(data.passcode);
     if (!check.ok) throw new Error(check.error);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const users = await supabaseAdmin.from("pi_users").select("uid,username,verified_at").order("verified_at", { ascending: false }).limit(500);
-    const rewards = await supabaseAdmin.from("pi_rewards").select("id,user_uid,amount,status,payment_id,txid,created_at").order("created_at", { ascending: false }).limit(100);
+    const users = await supabaseAdmin.from("pi_users").select("uid,username,verified_at,wallet_permission_verified_at,identity_source").order("verified_at", { ascending: false }).limit(500);
+    const rewards = await supabaseAdmin.from("pi_rewards").select("id,user_uid,amount,status,payment_id,txid,created_at,error_message,error_code").order("created_at", { ascending: false }).limit(100);
     if (users.error || rewards.error) throw new Error("Could not load rewards.");
     return { users: users.data, rewards: rewards.data, configured: Boolean(process.env["PI_REWARD_WALLET_SECRET"] && process.env["PI_API_KEY"]), network: "Pi Testnet" };
+  });
+export const syncPaidRewardUsers = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => adminInput.parse(input))
+  .handler(async ({ data }) => {
+    await adminDb(data.passcode);
+    const key = process.env["PI_API_KEY"];
+    if (!key) throw new Error("Pi payments are not configured.");
+    const { recoverPaidUsers } = await import("./reward-users.server");
+    return recoverPaidUsers(key);
   });
 export const sendPiReward = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => adminInput.extend({ uid: z.string().min(1).max(200), amount: rewardAmount, requestId: z.uuid() }).parse(input))
@@ -34,14 +43,14 @@ async function adminDb(passcode: string) {
   return supabaseAdmin;
 }
 
-// Dismiss a stuck reward only when Pi never received a payment for it (no payment ID, no transaction).
+// No local payment ID is NOT proof Pi never received a create request.
 export const dismissReward = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => adminInput.extend({ id: z.uuid() }).parse(input))
   .handler(async ({ data }) => {
     const db = await adminDb(data.passcode);
     const res = await db.from("pi_rewards").update({ status: "dismissed", updated_at: new Date().toISOString() })
-      .eq("id", data.id).eq("status", "review").is("payment_id", null).is("txid", null).select("id").maybeSingle();
-    if (res.error || !res.data) throw new Error("Only a reward under review with no Pi payment can be dismissed.");
+      .eq("id", data.id).eq("status", "review").eq("error_code", "wallet_permission_required").is("payment_id", null).is("txid", null).is("signed_xdr", null).select("id").maybeSingle();
+    if (res.error || !res.data) throw new Error("This reward has an uncertain outcome. It cannot safely be dismissed without authoritative proof that Pi rejected creation.");
     return { ok: true };
   });
 
