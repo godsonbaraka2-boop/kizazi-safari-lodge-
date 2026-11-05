@@ -66,7 +66,7 @@ export default function AdminPayment({ passcode }: { passcode: string }) {
   return <section className="mx-auto max-w-6xl border-t border-sand-50/20 py-8 text-sand-50 space-y-5">
     <div className="flex flex-wrap justify-between gap-3"><div><h2 className="font-display text-2xl">Pi user rewards</h2><p className="text-sm text-sand-50/60 mt-2">Testnet only · Paid from the app wallet · Not KST</p></div>
       <Button variant="ghost" onClick={() => void refresh()} aria-label="Refresh reward users" title="Refresh reward users"><RefreshCw /></Button></div>
-    <div className="flex flex-wrap items-center gap-3"><p>{data?.users.length ?? 0} Pi guest accounts</p><Button variant="outline" disabled={busy} onClick={() => void syncGuests()}><RefreshCw />Recover paid guests</Button></div>
+    <div className="flex flex-wrap items-center gap-3"><p>{data?.users.length ?? 0} Pi guest accounts</p><Button variant="ghost" disabled={busy} onClick={() => void syncGuests()}><RefreshCw />Recover paid guests</Button></div>
     <p className="flex items-center gap-2 text-sm"><Wallet />{data?.configured ? "Testnet reward wallet connected" : "Testnet reward wallet not connected"}</p>
     <input aria-label="Search Pi usernames" placeholder="Search Pi username" value={search} onChange={e => setSearch(e.target.value)} className="w-full max-w-sm border border-sand-50/20 bg-earth-800 rounded-md p-3" />
     <div className="grid gap-3 sm:grid-cols-2">
