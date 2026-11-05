@@ -1,10 +1,15 @@
 # Tasks
-- [ ] Fix Pi payment ownership and CSV formula injection, then verify protections.
-- [ ] Add verified Pi usernames and admin-selected app-to-user payouts.
+- [x] Request Pi wallet-address permission and show definitive reward rejection reasons safely.
+- [x] Recover verified identities from historical paid bookings/orders and show them in admin rewards.
+- [x] Verify reward recovery, deploy to Vercel, and check the primary domain.
+- [x] Fix Pi payment ownership and CSV formula injection, then verify protections.
+- [x] Add verified Pi usernames and admin-selected app-to-user payouts.
 - [x] Deploy current changes to Vercel and check the live app.
-- [ ] Replace food prompts with walk-in/staying options and save guest details to admin.
-- [ ] Audit security, fix verified issues, and test protections.
-- [ ] Replace unsafe reward mock with verified Pi app-to-user rewards workflow.
+- [x] Replace food prompts with walk-in/staying options and save guest details to admin.
+- [x] Audit security, fix verified issues, and test protections; no guarantee of complete security.
+- [x] Replace unsafe reward mock with verified Pi app-to-user rewards workflow.
 - [x] Show the room conflict warning in English in both availability checks and booking saves.
 - [x] Review security checks, dependencies, and payment/admin source; report limitations and risks.
-- [x] Verify the English booking warning in the preview against an existing room/date overlap after submitting the form.- [x] Server-side prices, admin-only kitchen orders, DB-enforced no double booking, admin brute-force protection.
+- [x] Verify the English booking warning in the preview against an existing room/date overlap after submitting the form.
+- [x] Server-side prices, admin-only kitchen orders, DB-enforced no double booking, admin brute-force protection.
+- [ ] Verify an actual Testnet payout — requires guest wallet consent and admin confirmation; no reward sent during testing.

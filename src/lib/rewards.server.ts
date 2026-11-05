@@ -1,4 +1,7 @@
-import { assertTestnet } from "./reward-policy";
+import { assertTestnet, rewardCreationRejection } from "./reward-policy";
+class CreationRejected extends Error {
+  constructor(public code: string, message: string) { super(message); }
+}
 type Payment = { identifier: string; user_uid: string; amount: number; direction: string; network: string; from_address: string; to_address: string; metadata?: { reward_id?: string }; status?: { cancelled?: boolean; user_cancelled?: boolean; developer_completed?: boolean; transaction_verified?: boolean }; transaction?: { txid?: string } | null };
 export async function runPiReward(input: { requestId: string; uid: string; amount: string }, apiKey: string, walletSecret: string) {
   const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
@@ -7,7 +10,13 @@ export async function runPiReward(input: { requestId: string; uid: string; amoun
   const horizon = "https://api.testnet.minepi.com";
   async function api(path: string, body?: unknown) {
     const res = await fetch(`https://api.minepi.com/v2${path}`, { method: body ? "POST" : "GET", headers: { Authorization: `Key ${apiKey}`, "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
-    if (!res.ok) throw new Error("Pi could not confirm this reward. Reconcile before sending again.");
+    if (!res.ok) {
+      const body: unknown = await res.json().catch(() => null);
+      console.error("[Pi reward] request rejected", { path, status: res.status });
+      const rejection = path === "/payments" ? rewardCreationRejection(res.status, body) : null;
+      if (rejection) throw new CreationRejected(rejection.code, rejection.message);
+      throw new Error("Pi could not confirm this reward. Reconcile before sending again.");
+    }
     return res.json();
   }
   const user = await db.from("pi_users").select("uid").eq("uid", input.uid).single();
@@ -21,11 +30,12 @@ export async function runPiReward(input: { requestId: string; uid: string; amoun
   }
   if (!row || row.user_uid !== input.uid || Number(row.amount) !== Number(input.amount)) throw new Error("Reward details do not match the original request.");
   if (row.status === "completed") return { amount: row.amount, txid: row.txid };
+  if (row.status === "dismissed") throw new Error(row.error_message ?? "This request was closed. Start a new reward request.");
   // Claim once; failed requests remain in review. A crashed processing request is
   // deliberately not automatically retried, since an external call may be in flight.
   const claim = await db.from("pi_rewards").update({ status: "processing", updated_at: new Date().toISOString() }).eq("id", row.id).in("status", ["pending", "review"]).select("id").maybeSingle();
   if (claim.error || !claim.data) throw new Error("This reward is already being processed. Do not send another.");
-  async function save(values: { payment_id?: string; signed_xdr?: string; txid?: string; status?: string }) {
+  async function save(values: { payment_id?: string; signed_xdr?: string; txid?: string; status?: string; error_code?: string | null; error_message?: string | null }) {
     const result = await db.from("pi_rewards").update({ ...values, updated_at: new Date().toISOString() }).eq("id", input.requestId);
     if (result.error) throw new Error("Reward record could not be saved. Stop and reconcile.");
   }
@@ -71,10 +81,15 @@ export async function runPiReward(input: { requestId: string; uid: string; amoun
     if (!payment.status?.developer_completed) await api(`/payments/${encodeURIComponent(payment.identifier)}/complete`, { txid });
     const confirmed = await api(`/payments/${encodeURIComponent(payment.identifier)}`) as Payment;
     if (!confirmed.status?.developer_completed || !confirmed.status.transaction_verified || confirmed.transaction?.txid !== txid) throw new Error("Pi has not confirmed completion yet. Reconcile this reward.");
-    await save({ txid, status: "completed" });
+    await save({ txid, status: "completed", error_code: null, error_message: null });
     return { amount: row.amount, txid };
   } catch (e) {
-    await save({ status: "review" });
+    if (e instanceof CreationRejected && created && !row.payment_id) {
+      await save({ status: "dismissed", error_code: e.code, error_message: e.message });
+      await db.from("pi_users").update({ wallet_permission_verified_at: null }).eq("uid", row.user_uid);
+    } else {
+      await save({ status: "review", error_message: e instanceof Error ? e.message : "Reward needs review." });
+    }
     throw e;
   }
 }

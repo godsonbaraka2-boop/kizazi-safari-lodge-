@@ -16,7 +16,7 @@ export const verifyPiAccessToken = createServerFn({ method: "POST" })
     const { verifyPiIdentity } = await import("./pi-identity.server");
     const user = await verifyPiIdentity(data.accessToken);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.from("pi_users").upsert({ ...user, verified_at: new Date().toISOString() });
+    const { error } = await supabaseAdmin.from("pi_users").upsert({ uid: user.uid, username: user.username, verified_at: new Date().toISOString(), wallet_permission_verified_at: user.walletPermission ? new Date().toISOString() : null, identity_source: "authentication" });
     if (error) throw new Error("Could not save verified Pi account. Please try again.");
-    return user;
+    return { uid: user.uid, username: user.username };
   });

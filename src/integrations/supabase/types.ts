@@ -159,6 +159,8 @@ export type Database = {
         Row: {
           amount: number
           created_at: string
+          error_code: string | null
+          error_message: string | null
           id: string
           payment_id: string | null
           signed_xdr: string | null
@@ -170,6 +172,8 @@ export type Database = {
         Insert: {
           amount: number
           created_at?: string
+          error_code?: string | null
+          error_message?: string | null
           id: string
           payment_id?: string | null
           signed_xdr?: string | null
@@ -181,6 +185,8 @@ export type Database = {
         Update: {
           amount?: number
           created_at?: string
+          error_code?: string | null
+          error_message?: string | null
           id?: string
           payment_id?: string | null
           signed_xdr?: string | null
@@ -201,19 +207,25 @@ export type Database = {
       }
       pi_users: {
         Row: {
+          identity_source: string
           uid: string
           username: string
           verified_at: string
+          wallet_permission_verified_at: string | null
         }
         Insert: {
+          identity_source?: string
           uid: string
           username: string
           verified_at?: string
+          wallet_permission_verified_at?: string | null
         }
         Update: {
+          identity_source?: string
           uid?: string
           username?: string
           verified_at?: string
+          wallet_permission_verified_at?: string | null
         }
         Relationships: []
       }
