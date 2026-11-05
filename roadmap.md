@@ -1,4 +1,7 @@
 # Tasks
+- [ ] Request Pi wallet-address permission and show definitive reward rejection reasons safely.
+- [ ] Recover verified identities from historical paid bookings/orders and show them in admin rewards.
+- [ ] Verify reward recovery, deploy to Vercel, and check the primary domain.
 - [ ] Fix Pi payment ownership and CSV formula injection, then verify protections.
 - [ ] Add verified Pi usernames and admin-selected app-to-user payouts.
 - [x] Deploy current changes to Vercel and check the live app.
