@@ -4,6 +4,7 @@ import { verifyPiAccessToken, type PiUser } from "./pi-auth.functions";
 import { completePiPayment } from "./pi-payments.functions";
 import { ensurePiReady } from "./pi-sdk";
 import { setPiAccessToken } from "./pi-session";
+import { PI_AUTH_SCOPES } from "./reward-policy";
 
 const STORAGE_KEY = "pi_auth_user";
 
@@ -31,7 +32,7 @@ export function usePiAuth() {
       const Pi = await ensurePiReady();
       console.info("[Pi.auth] authenticating", window.location.origin);
       const incomplete: Array<{ identifier: string; txid: string }> = [];
-      const auth = await Pi.authenticate(["payments", "username"], (payment) => {
+      const auth = await Pi.authenticate(PI_AUTH_SCOPES, (payment) => {
         // An unfinished payment blocks new ones — finish it on the server.
         const p = payment as { identifier?: string; transaction?: { txid?: string } | null };
         if (p?.identifier && p.transaction?.txid) {
