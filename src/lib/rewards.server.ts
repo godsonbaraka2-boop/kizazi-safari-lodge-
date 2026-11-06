@@ -93,3 +93,11 @@ export async function runPiReward(input: { requestId: string; uid: string; amoun
     throw e;
   }
 }
+// True only when Pi authoritatively lists no unfinished app-to-user payment for this reward.
+export async function piHasNoPaymentForReward(rewardId: string, apiKey: string) {
+  const res = await fetch("https://api.minepi.com/v2/payments/incomplete_server_payments", { headers: { Authorization: `Key ${apiKey}` } });
+  if (!res.ok) return false;
+  const body = await res.json().catch(() => null) as { incomplete_server_payments?: Payment[] } | null;
+  if (!body || !Array.isArray(body.incomplete_server_payments)) return false;
+  return !body.incomplete_server_payments.some(p => p.metadata?.reward_id === rewardId);
+}

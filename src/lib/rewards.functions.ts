@@ -48,9 +48,16 @@ export const dismissReward = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => adminInput.extend({ id: z.uuid() }).parse(input))
   .handler(async ({ data }) => {
     const db = await adminDb(data.passcode);
-    const res = await db.from("pi_rewards").update({ status: "dismissed", updated_at: new Date().toISOString() })
-      .eq("id", data.id).eq("status", "review").eq("error_code", "wallet_permission_required").is("payment_id", null).is("txid", null).is("signed_xdr", null).select("id").maybeSingle();
-    if (res.error || !res.data) throw new Error("This reward has an uncertain outcome. It cannot safely be dismissed without authoritative proof that Pi rejected creation.");
+    const row = await db.from("pi_rewards").select("id,status,error_code,payment_id,txid,signed_xdr").eq("id", data.id).maybeSingle();
+    if (row.error || !row.data || row.data.status !== "review" || row.data.payment_id || row.data.txid || row.data.signed_xdr) throw new Error("This reward has payment activity and cannot be dismissed. Reconcile it instead.");
+    if (row.data.error_code !== "wallet_permission_required") {
+      const key = process.env["PI_API_KEY"];
+      const { piHasNoPaymentForReward } = await import("./rewards.server");
+      if (!key || !(await piHasNoPaymentForReward(data.id, key))) throw new Error("Pi still shows an unfinished payment for this reward, or Pi could not be reached. Try again later.");
+    }
+    const res = await db.from("pi_rewards").update({ status: "dismissed", error_message: "Dismissed by admin after Pi showed no payment.", updated_at: new Date().toISOString() })
+      .eq("id", data.id).eq("status", "review").is("payment_id", null).is("txid", null).is("signed_xdr", null).select("id").maybeSingle();
+    if (res.error || !res.data) throw new Error("Could not dismiss this reward.");
     return { ok: true };
   });
 
